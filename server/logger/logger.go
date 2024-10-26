@@ -83,5 +83,5 @@ func (l *Logger) Error(msg string, data ...any) {
         return
     }
 
-    l.write(l.writer, l.color.red, "ERROR", str)
+    l.write(l.errorWriter, l.color.red, "ERROR", str)
 }
