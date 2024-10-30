@@ -49,7 +49,7 @@ func CreateLogger(w, d, e io.Writer, debugMode bool) Logger {
     }
 }
 
-func createMsg(msg string, data ...any) (string, error) {
+func createMsg(msg string, data []any) (string, error) {
     if len(data) % 2 != 0 {
         errorMsg := "not correctly formatted data in logger, data len should be even, data len: " + strconv.Itoa(len(data)) + "\n"
         os.Stderr.Write([]byte(errorMsg))
@@ -69,7 +69,7 @@ func (l *Logger) write(writer io.Writer, color color, level, msg string) {
 }
 
 func (l *Logger) Info(msg string, data ...any) {
-    str, err := createMsg(msg, data...)
+    str, err := createMsg(msg, data)
     if err != nil {
         return
     }
@@ -82,7 +82,7 @@ func (l *Logger) Debug(msg string, data ...any) {
         return
     }
 
-    str, err := createMsg(msg, data...)
+    str, err := createMsg(msg, data)
     if err != nil {
         return
     }
@@ -91,7 +91,7 @@ func (l *Logger) Debug(msg string, data ...any) {
 }
 
 func (l *Logger) Warning(msg string, data ...any) {
-    str, err := createMsg(msg, data...)
+    str, err := createMsg(msg, data)
     if err != nil {
         return
     }
@@ -100,7 +100,7 @@ func (l *Logger) Warning(msg string, data ...any) {
 }
 
 func (l *Logger) Error(msg string, data ...any) {
-    str, err := createMsg(msg, data...)
+    str, err := createMsg(msg, data)
     if err != nil {
         return
     }
