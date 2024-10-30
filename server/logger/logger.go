@@ -30,12 +30,14 @@ type Logger struct {
     errorWriter io.Writer
     debugWriter io.Writer
     color colorEnum
+    debugMode bool
 }
 
-func CreateLogger(w, e io.Writer) Logger {
+func CreateLogger(w, d, e io.Writer, debugMode bool) Logger {
     return Logger{
         writer: w,
         errorWriter: e,
+        debugWriter: d,
         color: colorEnum{
             blue: blue,
             yellow: yellow,
@@ -43,6 +45,7 @@ func CreateLogger(w, e io.Writer) Logger {
             cyan: cyan,
             escapeColor: escapeColor,
         },
+        debugMode: debugMode,
     }
 }
 
@@ -75,6 +78,10 @@ func (l *Logger) Info(msg string, data ...any) {
 }
 
 func (l *Logger) Debug(msg string, data ...any) {
+    if !l.debugMode {
+        return
+    }
+
     str, err := createMsg(msg, data...)
     if err != nil {
         return
