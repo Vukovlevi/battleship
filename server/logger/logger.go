@@ -7,10 +7,13 @@ import (
 	"strconv"
 )
 
-const blue = "\033[34m"
-const yellow = "\033[33m"
-const red = "\033[31m"
-const escapeColor = "\033[0m"
+const (
+    blue = "\033[34m"
+    yellow = "\033[33m"
+    red = "\033[31m"
+    cyan = "\033[36m"
+    escapeColor = "\033[0m"
+)
 
 type color string
 
@@ -18,12 +21,14 @@ type colorEnum struct {
     blue color
     yellow color
     red color
+    cyan color
     escapeColor color
 }
 
 type Logger struct {
     writer io.Writer
     errorWriter io.Writer
+    debugWriter io.Writer
     color colorEnum
 }
 
@@ -35,6 +40,7 @@ func CreateLogger(w, e io.Writer) Logger {
             blue: blue,
             yellow: yellow,
             red: red,
+            cyan: cyan,
             escapeColor: escapeColor,
         },
     }
@@ -66,6 +72,15 @@ func (l *Logger) Info(msg string, data ...any) {
     }
 
     l.write(l.writer, l.color.blue, "INFO", str)
+}
+
+func (l *Logger) Debug(msg string, data ...any) {
+    str, err := createMsg(msg, data...)
+    if err != nil {
+        return
+    }
+
+    l.write(l.debugWriter, l.color.cyan, "DEBUG", str)
 }
 
 func (l *Logger) Warning(msg string, data ...any) {
