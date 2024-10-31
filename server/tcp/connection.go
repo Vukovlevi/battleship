@@ -17,10 +17,15 @@ func (c *Connection) NextMsg() (*TcpCommand, error) { //TODO: return value (tcp 
         return nil, err
     }
 
-    msg := buf[:n]
-    name := "user-" + string(msg)
+    command, err := parseTcpCommand(buf[:n])
 
-    return &TcpCommand{Connection: c, Type: 1, Data: []byte(name)}, nil
+    if err != nil {
+        return nil, err
+    }
+
+    command.Connection = c
+
+    return command, nil
 }
 
 func (c *Connection) Close() {

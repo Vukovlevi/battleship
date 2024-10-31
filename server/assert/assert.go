@@ -42,3 +42,11 @@ func Nil(statement any, msg string, data ...any) {
         runAssert(msg, data)
     }
 }
+
+func NotNil(statement any, msg string, data ...any) {
+    checkLogger()
+
+    if statement == nil {
+        runAssert(msg, data)
+    }
+}

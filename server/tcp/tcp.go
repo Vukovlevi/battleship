@@ -10,6 +10,17 @@ import (
 	"github.com/vukovlevi/battleship/server/logger"
 )
 
+const (
+    VERSION byte = 1
+    VERSION_SIZE = 1
+    VERSION_OFFSET = 0
+    MESSAGE_TYPE_SIZE = 1
+    MESSAGE_TYPE_OFFSET = 1
+    DATA_LENGTH_SIZE = 2
+    DATA_LENGTH_OFFSET = 2
+    HEADER_OFFSET = VERSION_SIZE + MESSAGE_TYPE_SIZE + DATA_LENGTH_SIZE
+)
+
 type Server struct {
     listener net.Listener
     connections map[int]*Connection
@@ -32,15 +43,17 @@ func NewTcpServer(port uint16, log *logger.Logger) *Server {
 }
 
 func readConnection(server *Server, connection Connection) {
+    defer connection.Close()
     for {
-        msg, err := connection.NextMsg()
+        command, err := connection.NextMsg()
 
         if err != nil {
             if err == io.EOF {
                 server.log.Info("closing connection", "connectionId", connection.Id)
                 //TODO: close this connection correctly -> connection closed by client -- use the channel
+                //create new message type which indicates closing of things on both side (client and in-server communication)
             } else {
-                server.log.Warning("unknown error occured while reading connection", "err", err)
+                server.log.Warning("unknown error occured while reading connection", "connectionId", connection.Id, "err", err)
             }
 
             server.mutex.Lock()
@@ -52,8 +65,8 @@ func readConnection(server *Server, connection Connection) {
             break
         }
 
-        server.log.Debug("got message", "connId", connection.Id, "msg", msg)
-        connection.SendToChan <- *msg
+        server.log.Debug("got message", "connId", connection.Id, "msg", command)
+        connection.SendToChan <- *command
     }
 }
 

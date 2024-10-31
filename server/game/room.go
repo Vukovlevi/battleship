@@ -12,7 +12,15 @@ type GameRoom struct {
 	MessageChan chan tcp.TcpCommand
 }
 
+func (r *GameRoom) CloseRoom() {
+	r.log.Info("closing room", "player1", r.player1.username, "player2", r.player2.username)
+	r.player1.connection.Close()
+	r.player2.connection.Close()
+	close(r.MessageChan)
+}
+
 func (r *GameRoom) Loop() {
+	defer r.CloseRoom()
 	for {
 		command, ok := <- r.MessageChan
 		if !ok {
