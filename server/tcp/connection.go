@@ -5,15 +5,24 @@ import (
 )
 
 type Connection struct {
-    id int
+    Id int
     conn net.Conn
+    SendToChan chan TcpCommand
 }
 
-func (c *Connection) NextMsg() (string, error) { //TODO: return value (tcp command)
-    buf := make([]byte, 1024, 1024)
+func (c *Connection) NextMsg() (*TcpCommand, error) { //TODO: return value (tcp command)
+    buf := make([]byte, 1024)
     n, err := c.conn.Read(buf)
+    if err != nil {
+        return nil, err
+    }
 
     msg := buf[:n]
+    name := "user-" + string(msg)
 
-    return string(msg), err
+    return &TcpCommand{Connection: c, Type: 1, Data: []byte(name)}, nil
+}
+
+func (c *Connection) Close() {
+    c.conn.Close()
 }

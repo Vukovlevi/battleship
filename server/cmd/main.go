@@ -2,11 +2,12 @@ package main
 
 import (
 	"flag"
-    "os"
+	"os"
 
-	"github.com/vukovlevi/battleship/server/tcp"
-	"github.com/vukovlevi/battleship/server/logger"
 	"github.com/vukovlevi/battleship/server/assert"
+	"github.com/vukovlevi/battleship/server/game"
+	"github.com/vukovlevi/battleship/server/logger"
+	"github.com/vukovlevi/battleship/server/tcp"
 )
 
 func main() {
@@ -25,6 +26,9 @@ func main() {
     assert.Assert(true, "lajos", "id", 5, "name", "szia")
     */
 
+    gameServer := game.NewGameServer(&log)
+    gameServer.Start()
+
     tcpServer := tcp.NewTcpServer(42069, &log)
-    tcpServer.Start()
+    tcpServer.Start(gameServer.IncomingRequestChan)
 }

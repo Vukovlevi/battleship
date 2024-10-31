@@ -37,25 +37,27 @@ func readConnection(server *Server, connection Connection) {
 
         if err != nil {
             if err == io.EOF {
-                //TODO: close this connection correctly -> connection closed by client
+                server.log.Info("closing connection", "connectionId", connection.Id)
+                //TODO: close this connection correctly -> connection closed by client -- use the channel
             } else {
                 server.log.Warning("unknown error occured while reading connection", "err", err)
             }
 
             server.mutex.Lock()
-            delete(server.connections, connection.id)
+            delete(server.connections, connection.Id)
             server.mutex.Unlock()
 
-            server.log.Info("closing connection", "id", connection.id)
+            server.log.Info("closing connection", "id", connection.Id)
             server.log.Debug("connections info", "len", len(server.connections))
             break
         }
 
-        server.log.Debug("got message", "connId", connection.id, "msg", msg)
+        server.log.Debug("got message", "connId", connection.Id, "msg", msg)
+        connection.SendToChan <- *msg
     }
 }
 
-func (s *Server) Start() {
+func (s *Server) Start(sendToChan chan TcpCommand) {
     s.log.Info("starting tcp server", "port", s.port)
     id := 0
     for {
@@ -65,7 +67,7 @@ func (s *Server) Start() {
             s.log.Warning("error while acceptin new connection", "err", err)
         }
 
-        connection := Connection{id: id, conn: conn}
+        connection := Connection{Id: id, conn: conn, SendToChan: sendToChan}
         s.mutex.Lock()
         s.connections[id] = &connection
         s.mutex.Unlock()
