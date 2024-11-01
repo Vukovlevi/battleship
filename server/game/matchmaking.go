@@ -23,6 +23,15 @@ func (m *MatchMaking) HasPlayer(username string) bool {
 	return false
 }
 
+func (m *MatchMaking) HasConnection(connection *tcp.Connection) (*Player, bool) {
+	for user := range m.Players {
+		if user.connection == connection {
+			return user, true
+		}
+	}
+	return nil, false
+}
+
 func (m *MatchMaking) CanStartGame() bool {
 	return len(m.Players) > 1
 }
@@ -50,6 +59,7 @@ func (m *MatchMaking) SetupGame() *GameRoom {
 
 	gameRoom.log = m.log
 	gameRoom.MessageChan = make(chan tcp.TcpCommand)
+	gameRoom.closeChan = make(chan *GameRoom)
 	gameRoom.player1.connection.SendToChan = gameRoom.MessageChan
 	gameRoom.player2.connection.SendToChan = gameRoom.MessageChan
 

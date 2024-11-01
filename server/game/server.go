@@ -11,8 +11,9 @@ import (
 type GameServer struct {
 	log *logger.Logger
 	MatchMaking     MatchMaking
-	Rooms           []*GameRoom
+	Rooms           map[*GameRoom]bool
 	IncomingRequestChan chan tcp.TcpCommand 
+	GameRoomCloseChan chan *GameRoom
 	mutex sync.RWMutex
 }
 
@@ -20,12 +21,24 @@ func NewGameServer(log *logger.Logger) *GameServer {
 	return &GameServer{
 		log: log,
 		MatchMaking: MatchMaking{Players: make(map[*Player]bool), log: log},
-		Rooms:       make([]*GameRoom, 0),
+		Rooms:       make(map[*GameRoom]bool),
 		IncomingRequestChan: make(chan tcp.TcpCommand),
+		GameRoomCloseChan: make(chan *GameRoom),
+		mutex: sync.RWMutex{},
 	}
 }
 
 func (g *GameServer) Start() {
+	go func() {
+		for {
+			room, ok := <- g.GameRoomCloseChan
+			assert.Assert(ok, "gameroom closing channel should never be closed")
+			g.mutex.Lock()
+			delete(g.Rooms, room)
+			g.mutex.Unlock()
+		}
+	}()
+
 	go func() {
 		g.log.Info("game server started")
 		for {
@@ -39,17 +52,32 @@ func (g *GameServer) Start() {
 }
 
 func handleJoinRequest(g *GameServer, command tcp.TcpCommand) {
-	if command.Type != tcp.CommandType.JoinRequest {
-		g.log.Warning("command type mismatch while handling join request, closing connection", "expected type", tcp.CommandType.JoinRequest, "got type", command.Type, "connectionId", command.Connection.Id)
-		//TODO: return a general error message to client
-		command.Connection.Close()
+	switch command.Type {
+	case tcp.CommandType.Close:
+		if player, ok := g.MatchMaking.HasConnection(command.Connection); ok {
+			g.MatchMaking.mutex.Lock()
+			delete(g.MatchMaking.Players, player)
+			g.MatchMaking.mutex.Unlock()
+		}
+	case tcp.CommandType.JoinRequest:
+		break
+	default:
+		g.log.Warning("command type mismatch while handling join request", "expected type", tcp.CommandType.JoinRequest, "got type", command.Type, "connectionId", command.Connection.Id)
+		cmd := tcp.CommandTypeMismatchCommand
+		cmd.Connection = command.Connection
+		g.log.Debug("sending command to client", "command", cmd, "bytes", cmd.EncodeToBytes())
+		command.Connection.Send(cmd.EncodeToBytes())
 		return
 	}
 
 	if g.MatchMaking.HasPlayer(string(command.Data)) {
 		g.log.Debug("duplicate username", "username", string(command.Data))
-		//TODO: return the correct tcp error message (DuplicateUsername)
-		command.Connection.Close()
+		cmd := tcp.TcpCommand{
+			Connection: command.Connection,
+			Type: tcp.CommandType.DuplicateUsername,
+			Data: make([]byte, 0),
+		}
+		command.Connection.Send(cmd.EncodeToBytes())
 		return
 	}
 
@@ -74,7 +102,7 @@ func handleJoinRequest(g *GameServer, command tcp.TcpCommand) {
 		g.log.Debug("deleted players from matchmaking", "player1", room.player1.username, "player2", room.player2.username, "mm len", len(g.MatchMaking.Players))
 
 		g.mutex.Lock()
-		g.Rooms = append(g.Rooms, room)
+		g.Rooms[room] = true
 		g.mutex.Unlock()
 
 		g.log.Info("new room set", "player1", room.player1.username, "player2", room.player2.username)

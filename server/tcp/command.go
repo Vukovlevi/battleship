@@ -2,7 +2,6 @@ package tcp
 
 import (
 	"encoding/binary"
-	"errors"
 	"fmt"
 )
 
@@ -16,6 +15,21 @@ type CommandTypeEnum struct {
 	PlayerGuess       byte
 	GuessConfirm      byte
 	GameOver          byte
+	Close 			  byte
+	Mismatch		  byte
+}
+
+type TcpError struct {
+	msg string
+	command TcpCommand
+}
+
+func (t TcpError) Error() string {
+	return t.msg
+}
+
+func createTcpError(msg string, command TcpCommand) TcpError {
+	return TcpError{msg: msg, command: command}
 }
 
 var (
@@ -29,6 +43,32 @@ var (
 		PlayerGuess:       7,
 		GuessConfirm:      8,
 		GameOver:          9,
+		Close: 			   10,
+		Mismatch: 		   11,
+	}
+
+	CloseCommand = TcpCommand{
+		Connection: nil,
+		Type: CommandType.Close,
+		Data: make([]byte, 0),
+	}
+
+	VersionMismatchCommand = TcpCommand{
+		Connection: nil,
+		Type: CommandType.Mismatch,
+		Data: []byte{0},
+	}
+
+	LengthMismatchCommand = TcpCommand{
+		Connection: nil,
+		Type: CommandType.Mismatch,
+		Data: []byte{1},
+	}
+
+	CommandTypeMismatchCommand = TcpCommand{
+		Connection: nil,
+		Type: CommandType.Mismatch,
+		Data: []byte{2},
 	}
 )
 
@@ -50,7 +90,8 @@ func (t *TcpCommand) EncodeToBytes() []byte {
 
 func parseTcpCommand(data []byte) (*TcpCommand, error) {
 	if data[VERSION_OFFSET:VERSION_OFFSET + VERSION_SIZE][0] != VERSION {
-		return nil, errors.New("version mismatch")
+		err := createTcpError(fmt.Sprintf("version mismatch, expected: %d, got: %d", VERSION, data[VERSION_OFFSET:VERSION_OFFSET+VERSION_SIZE][0]), VersionMismatchCommand)
+		return nil, err
 	}
 
 	command := new(TcpCommand)
@@ -58,7 +99,8 @@ func parseTcpCommand(data []byte) (*TcpCommand, error) {
 
 	length := binary.BigEndian.Uint16(data[DATA_LENGTH_OFFSET:DATA_LENGTH_OFFSET + DATA_LENGTH_SIZE])
 	if HEADER_OFFSET + length != uint16(len(data)) {
-		return nil, fmt.Errorf("length mismatch, expected(len):%d, got(len):%d, data:%v, data as string:%s", HEADER_OFFSET + length, len(data), data, string(data))
+		err := createTcpError(fmt.Sprintf("length mismatch, expected(len): %d, got(len): %d, data: %v, data as string: %s", HEADER_OFFSET + length, len(data), data, string(data)), LengthMismatchCommand)
+		return nil, err
 	}
 
 	command.Data = data[HEADER_OFFSET:]

@@ -135,7 +135,7 @@ func TestTcpServer(t *testing.T) {
 
 	conn.Write(shouldbe1)
 	wg.Add(1)
-	time.Sleep(time.Microsecond)
+	time.Sleep(time.Millisecond * 10)
 	conn.Write(shouldbe2)
 	wg.Add(1)
 

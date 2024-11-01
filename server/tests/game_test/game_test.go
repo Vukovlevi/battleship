@@ -26,26 +26,28 @@ func TestConnectingToGameServer(t *testing.T) {
 	testGameServer := game.NewGameServer(&log)
 	testGameServer.Start()
 
-	_, client := net.Pipe()
-	connection := tcp.CreateConnection(0, client, testGameServer.IncomingRequestChan)
+	r, w := net.Pipe()
+	connection := tcp.CreateConnection(0, w, testGameServer.IncomingRequestChan)
+	connection.SendToChan = testGameServer.IncomingRequestChan
 	command := tcp.TcpCommand{
 		Connection: &connection,
 		Type: tcp.CommandType.DuplicateUsername,
 		Data: []byte("vukovlevi"),
 	}
 
-	connection.SendToChan = testGameServer.IncomingRequestChan
-
 	connection.SendToChan <- command
 	time.Sleep(time.Millisecond * 10)
 
 	//testing command type mismatch
-	_, err = command.Connection.NextMsg()
-	assert.NotNil(err, "reading from connectiond should return error, because it should be closed")
+	buf := make([]byte, 256)
+	n, err := r.Read(buf)
+	assert.Nil(err, "reading from connectiond should not return error")
+	assert.Assert(n > 0, "returned message should not be of length 0")
+	log.Debug("client got message", "buf", buf[:n])
 
 	//testing first player connection
-	_, client = net.Pipe()
-	connection = tcp.CreateConnection(0, client, testGameServer.IncomingRequestChan)
+	r, w = net.Pipe()
+	connection = tcp.CreateConnection(0, w, testGameServer.IncomingRequestChan)
 	command.Connection = &connection
 	command.Type = tcp.CommandType.JoinRequest
 
@@ -66,12 +68,15 @@ func TestConnectingToGameServer(t *testing.T) {
 	connection.SendToChan <- command
 	time.Sleep(time.Millisecond * 10)
 
-	_, err = command.Connection.NextMsg()
-	assert.NotNil(err, "reading from connectiond should return error, because it should be closed")
+	buf = make([]byte, 256)
+	n, err = r.Read(buf)
+	assert.Nil(err, "reading from connectiond should not return error")
+	assert.Assert(n > 0, "returned message should no be of length 0")
+	log.Debug("client got message", "buf", buf[:n])
 
 	//testing second connection
-	_, client = net.Pipe()
-	connection = tcp.CreateConnection(1, client, testGameServer.IncomingRequestChan)
+	_, w = net.Pipe()
+	connection = tcp.CreateConnection(1, w, testGameServer.IncomingRequestChan)
 	command.Connection = &connection
 
 	command.Data = []byte("joska")

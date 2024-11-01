@@ -39,3 +39,7 @@ func (c *Connection) NextMsg() (*TcpCommand, error) { //TODO: return value (tcp 
 func (c *Connection) Close() {
     c.conn.Close()
 }
+
+func (c *Connection) Send(b []byte) (int, error) {
+    return c.conn.Write(b)
+}
