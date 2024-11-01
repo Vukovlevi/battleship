@@ -107,6 +107,10 @@ func TestTcpServer(t *testing.T) {
 			
 			msgCount++
 			wg.Done()
+
+			if msgCount == 2 {
+				break
+			}
 		}
 	}()
 

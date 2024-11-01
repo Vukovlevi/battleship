@@ -9,13 +9,13 @@ import (
 
 type MatchMaking struct {
 	log *logger.Logger
-	players map[*Player]bool
+	Players map[*Player]bool
 	MessageChan chan tcp.TcpCommand
 	mutex sync.RWMutex
 }
 
 func (m *MatchMaking) HasPlayer(username string) bool {
-	for user := range m.players {
+	for user := range m.Players {
 		if user.username == username {
 			return true
 		}
@@ -24,7 +24,7 @@ func (m *MatchMaking) HasPlayer(username string) bool {
 }
 
 func (m *MatchMaking) CanStartGame() bool {
-	return len(m.players) > 1
+	return len(m.Players) > 1
 }
 
 func (m *MatchMaking) SetupGame() *GameRoom {
@@ -35,7 +35,7 @@ func (m *MatchMaking) SetupGame() *GameRoom {
 	gameRoom := new(GameRoom)
 	
 	players := 0
-	for player := range m.players {
+	for player := range m.Players {
 		if players == 0 {
 			gameRoom.player1 = player
 		} else {

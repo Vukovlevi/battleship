@@ -19,7 +19,7 @@ type GameServer struct {
 func NewGameServer(log *logger.Logger) *GameServer {
 	return &GameServer{
 		log: log,
-		MatchMaking: MatchMaking{players: make(map[*Player]bool), log: log},
+		MatchMaking: MatchMaking{Players: make(map[*Player]bool), log: log},
 		Rooms:       make([]*GameRoom, 0),
 		IncomingRequestChan: make(chan tcp.TcpCommand),
 	}
@@ -49,6 +49,7 @@ func handleJoinRequest(g *GameServer, command tcp.TcpCommand) {
 	if g.MatchMaking.HasPlayer(string(command.Data)) {
 		g.log.Debug("duplicate username", "username", string(command.Data))
 		//TODO: return the correct tcp error message (DuplicateUsername)
+		command.Connection.Close()
 		return
 	}
 
@@ -61,16 +62,16 @@ func handleJoinRequest(g *GameServer, command tcp.TcpCommand) {
 	g.log.Info("player put into matchmaking", "player", player.username)
 
 	g.MatchMaking.mutex.Lock()
-	g.MatchMaking.players[&player]=true
+	g.MatchMaking.Players[&player]=true
 	g.MatchMaking.mutex.Unlock()
 
 	room := g.MatchMaking.SetupGame()
 	if room != nil {
 		g.MatchMaking.mutex.Lock()
-		delete(g.MatchMaking.players, room.player1)
-		delete(g.MatchMaking.players, room.player2)
+		delete(g.MatchMaking.Players, room.player1)
+		delete(g.MatchMaking.Players, room.player2)
 		g.MatchMaking.mutex.Unlock()
-		g.log.Debug("deleted players from matchmaking", "player1", room.player1.username, "player2", room.player2.username, "mm len", len(g.MatchMaking.players))
+		g.log.Debug("deleted players from matchmaking", "player1", room.player1.username, "player2", room.player2.username, "mm len", len(g.MatchMaking.Players))
 
 		g.mutex.Lock()
 		g.Rooms = append(g.Rooms, room)

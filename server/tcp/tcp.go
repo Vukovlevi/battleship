@@ -79,7 +79,7 @@ func (s *Server) Start(sendToChan chan TcpCommand) {
             s.log.Warning("error while acceptin new connection", "err", err)
         }
 
-        connection := Connection{Id: id, conn: conn, SendToChan: sendToChan}
+        connection := CreateConnection(id, conn, sendToChan)
         s.mutex.Lock()
         s.connections[id] = &connection
         s.mutex.Unlock()

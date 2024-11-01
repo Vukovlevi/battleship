@@ -10,6 +10,14 @@ type Connection struct {
     SendToChan chan TcpCommand
 }
 
+func CreateConnection(id int, conn net.Conn, sendToChan chan TcpCommand) Connection {
+    return Connection{
+        Id: id,
+        conn: conn,
+        SendToChan: sendToChan,
+    }
+}
+
 func (c *Connection) NextMsg() (*TcpCommand, error) { //TODO: return value (tcp command)
     buf := make([]byte, 1024)
     n, err := c.conn.Read(buf)
