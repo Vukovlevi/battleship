@@ -7,8 +7,8 @@ import (
 )
 
 const (
-	correctlyClosed byte = 0x80
-	playerLeftClosed byte = 0x00
+	correctlyClosed byte = 0x00
+	playerLeftClosed byte = 0x80
 	
 	winner byte = 0x40
 	loser byte = 0x00
@@ -28,8 +28,6 @@ func (r *GameRoom) CloseRoom(command *tcp.TcpCommand) {
 		r.player1.connection.Send(command.EncodeToBytes())
 		r.player2.connection.Send(command.EncodeToBytes())
 	}
-	r.player1.connection.Close()
-	r.player2.connection.Close()
 
 	close(r.MessageChan)
 	r.closeChan <- r
@@ -53,6 +51,9 @@ func (r *GameRoom) HandleConnectionClosed(command *tcp.TcpCommand) *tcp.TcpComma
 		closer = r.player1
 		sendTo = r.player2
 	}
+	sendTo.connection.GameOver = true
+
+	r.log.Debug("gameroom closing", "close initiated by", closer.username)
 	
 	cmd := tcp.TcpCommand{
 		Connection: sendTo.connection,
@@ -60,11 +61,11 @@ func (r *GameRoom) HandleConnectionClosed(command *tcp.TcpCommand) *tcp.TcpComma
 		Data: r.GetStatsByte(closer, sendTo),
 	}
 
+	r.log.Debug("got statistics for other user", "stat", cmd.Data)
 	return &cmd
 }
 
 func (r *GameRoom) Loop() {
-	defer r.CloseRoom(nil)
 	for {
 		command, ok := <- r.MessageChan
 		if !ok {

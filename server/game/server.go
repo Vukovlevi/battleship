@@ -36,6 +36,7 @@ func (g *GameServer) Start() {
 			g.mutex.Lock()
 			delete(g.Rooms, room)
 			g.mutex.Unlock()
+			g.log.Debug("deleted room", "rooms len", len(g.Rooms))
 		}
 	}()
 
@@ -107,6 +108,7 @@ func handleJoinRequest(g *GameServer, command tcp.TcpCommand) {
 
 		g.log.Info("new room set", "player1", room.player1.username, "player2", room.player2.username)
 
+		room.closeChan = g.GameRoomCloseChan
 		go room.Loop()
 	}
 }

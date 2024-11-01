@@ -8,6 +8,7 @@ type Connection struct {
     Id int
     conn net.Conn
     SendToChan chan TcpCommand
+    GameOver bool
 }
 
 func CreateConnection(id int, conn net.Conn, sendToChan chan TcpCommand) Connection {
@@ -15,6 +16,7 @@ func CreateConnection(id int, conn net.Conn, sendToChan chan TcpCommand) Connect
         Id: id,
         conn: conn,
         SendToChan: sendToChan,
+        GameOver: false,
     }
 }
 

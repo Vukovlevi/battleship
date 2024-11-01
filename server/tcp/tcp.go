@@ -23,7 +23,7 @@ const (
 
 type Server struct {
     listener net.Listener
-    connections map[int]*Connection
+    Connections map[int]*Connection
     mutex sync.RWMutex
     log *logger.Logger
     port uint16
@@ -35,7 +35,7 @@ func NewTcpServer(port uint16, log *logger.Logger) *Server {
 
     return &Server{
         listener: listener,
-        connections: make(map[int]*Connection),
+        Connections: make(map[int]*Connection),
         mutex: sync.RWMutex{},
         log: log,
         port: port,
@@ -43,11 +43,6 @@ func NewTcpServer(port uint16, log *logger.Logger) *Server {
 }
 
 func sendCloseCommandToGameServer(connection *Connection) {
-    _, ok := <- connection.SendToChan
-    if !ok {
-        return
-    }
-
     command := CloseCommand
     command.Connection = connection
 
@@ -63,11 +58,15 @@ func readConnection(server *Server, connection Connection) {
         if err != nil {
             switch err {
             case io.EOF:
-                server.log.Info("closing connection", "connectionId", connection.Id)
-                sendCloseCommandToGameServer(&connection)
+                msg := ""
+                if connection.GameOver {
+                    msg = "client closed connection on server command"
+                } else {
+                    msg = "closing connection on client event"
+                    sendCloseCommandToGameServer(&connection)
+                }
+                server.log.Info(msg, "connectionId", connection.Id)
                 close = true
-            case io.ErrClosedPipe:
-                server.log.Debug("connection closed by server", "connectionId", connection.Id)
             default:
                 if tcpError, ok := err.(TcpError); ok {
                     server.log.Warning(err.Error(), "connectionId", connection.Id)
@@ -81,10 +80,10 @@ func readConnection(server *Server, connection Connection) {
 
             if close {
                 server.mutex.Lock()
-                delete(server.connections, connection.Id)
+                delete(server.Connections, connection.Id)
                 server.mutex.Unlock()
 
-                server.log.Debug("connections info", "len", len(server.connections))
+                server.log.Debug("connections info", "len", len(server.Connections))
                 break
             }
         }
@@ -108,11 +107,11 @@ func (s *Server) Start(sendToChan chan TcpCommand) {
 
         connection := CreateConnection(id, conn, sendToChan)
         s.mutex.Lock()
-        s.connections[id] = &connection
+        s.Connections[id] = &connection
         s.mutex.Unlock()
 
         s.log.Info("accepting new connection", "id", id, "addr", conn.RemoteAddr())
-        s.log.Debug("connections info", "len", len(s.connections))
+        s.log.Debug("connections info", "len", len(s.Connections))
         id++
 
         go readConnection(s, connection)

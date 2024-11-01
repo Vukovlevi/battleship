@@ -59,7 +59,6 @@ func (m *MatchMaking) SetupGame() *GameRoom {
 
 	gameRoom.log = m.log
 	gameRoom.MessageChan = make(chan tcp.TcpCommand)
-	gameRoom.closeChan = make(chan *GameRoom)
 	gameRoom.player1.connection.SendToChan = gameRoom.MessageChan
 	gameRoom.player2.connection.SendToChan = gameRoom.MessageChan
 
