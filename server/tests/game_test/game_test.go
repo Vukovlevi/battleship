@@ -30,7 +30,7 @@ func TestConnectingToGameServer(t *testing.T) {
 	connection := tcp.CreateConnection(0, client, testGameServer.IncomingRequestChan)
 	command := tcp.TcpCommand{
 		Connection: &connection,
-		Type: 2,
+		Type: tcp.CommandType.DuplicateUsername,
 		Data: []byte("vukovlevi"),
 	}
 
@@ -47,7 +47,7 @@ func TestConnectingToGameServer(t *testing.T) {
 	_, client = net.Pipe()
 	connection = tcp.CreateConnection(0, client, testGameServer.IncomingRequestChan)
 	command.Connection = &connection
-	command.Type = 1
+	command.Type = tcp.CommandType.JoinRequest
 
 	connection.SendToChan <- command
 	time.Sleep(time.Millisecond * 10)
