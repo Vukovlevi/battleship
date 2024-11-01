@@ -60,7 +60,6 @@ func readConnection(server *Server, connection Connection) {
             delete(server.connections, connection.Id)
             server.mutex.Unlock()
 
-            server.log.Info("closing connection", "id", connection.Id)
             server.log.Debug("connections info", "len", len(server.connections))
             break
         }
