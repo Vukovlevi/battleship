@@ -12,7 +12,7 @@ type GameServer struct {
 	log *logger.Logger
 	MatchMaking     MatchMaking
 	Rooms           map[*GameRoom]bool
-	IncomingRequestChan chan tcp.TcpCommand 
+	IncomingRequestChan chan tcp.TcpCommand
 	GameRoomCloseChan chan *GameRoom
 	mutex sync.RWMutex
 }
@@ -49,7 +49,7 @@ func (g *GameServer) Start() {
 
 			go handleJoinRequest(g, msg)
 		}
-	}() 
+	}()
 }
 
 func handleJoinRequest(g *GameServer, command tcp.TcpCommand) {
@@ -60,6 +60,7 @@ func handleJoinRequest(g *GameServer, command tcp.TcpCommand) {
 			delete(g.MatchMaking.Players, player)
 			g.MatchMaking.mutex.Unlock()
 		}
+        return
 	case tcp.CommandType.JoinRequest:
 		break
 	default:
