@@ -4,7 +4,7 @@
 
   1 byte: version  1 byte: msg type*      2 bytes: data* length (x)
 | - - - - - - - - | - - - - - - - - | - - - - - - - - | - - - - - - - - |
-                              x bytes: data*
+                             x bytes: data*
 | - - - - - - - - | - - - - - - - - | - - - - - - - - | - - - - - - - - |
 
 ## Msg type*:
@@ -29,7 +29,7 @@
     - a list of ship*
 
 ### Ship*:
-1 byte: spots* length                                                       2 bytes: spot*
+1 byte: spots* length                                                      2 bytes: spot*
 | - - - - - - - - |                                             | - - - - - - - - | - - - - - - - - |
 (how many bytes is there that contains this ships's spots)         (spot*: [x; y] -> x * 1000 + y)
 (eg.: in case of 1 spot - 2 [spots* length = spot* count * 2])     (eg.: in case of [8; 7] -> 8007)
