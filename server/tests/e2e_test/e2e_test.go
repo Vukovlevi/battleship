@@ -144,6 +144,7 @@ func TestEndToEnd(t *testing.T) {
     messageType := buf[tcp.MESSAGE_TYPE_OFFSET:tcp.MESSAGE_TYPE_OFFSET + tcp.MESSAGE_TYPE_SIZE][0]
     assert.Assert(messageType == 3, "command type should 3 on match found event on conn1", "got type", messageType)
     assert.Assert(username == "jozsi", "client should receive the other player's name", "received info", username)
+    log.Debug("client got message on conn1", "msg", buf[:n])
 	time.Sleep(time.Millisecond * 10)
 
     buf = make([]byte, 256)
@@ -154,7 +155,8 @@ func TestEndToEnd(t *testing.T) {
     messageType = buf[tcp.MESSAGE_TYPE_OFFSET:tcp.MESSAGE_TYPE_OFFSET + tcp.MESSAGE_TYPE_SIZE][0]
     assert.Assert(messageType == 3, "command type should 3 on match found event on conn2", "got type", messageType)
     assert.Assert(username == "vukovlevi", "client should receive the other player's name", "received info", username)
-	time.Sleep(time.Millisecond * 10)
+    log.Debug("client got message on conn2", "msg", buf[:n])
+    time.Sleep(time.Millisecond * 10)
 
 	//testing one player disconnecting
 	conn1.Close()
