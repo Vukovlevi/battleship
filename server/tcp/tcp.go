@@ -70,7 +70,7 @@ func readConnection(server *Server, connection Connection) {
             default: //case: there is another error
                 if tcpError, ok := err.(TcpError); ok { //if the error was with message we send it back to inform client about bad command
                     server.log.Warning(err.Error(), "connectionId", connection.Id)
-                    connection.Send(tcpError.command.EncodeToBytes())
+                    connection.Send(tcpError.Command.EncodeToBytes())
                 } else { //if the client closed connection by force
                     server.log.Warning("unknown error occured while reading connection", "connectionId", connection.Id, "err", err)
                     sendCloseCommandToGameServer(&connection) //handle all closing of gamerooms, mm and this tcp connection

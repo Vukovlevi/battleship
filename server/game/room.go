@@ -45,13 +45,19 @@ func (r *GameRoom) GetStatsByte(closer *Player, sendingTo *Player) []byte { //se
 	return make([]byte, 0)
 }
 
+func (r *GameRoom) GetPlayers(command tcp.TcpCommand) (*Player, *Player) { //the first user is whose the connection is, the second is the other
+    player := r.player1
+    otherPlayer := r.player2
+    if r.player2.connection == command.Connection {
+        player = r.player2
+        otherPlayer = r.player1
+    }
+
+    return player, otherPlayer
+}
+
 func (r *GameRoom) HandleConnectionClosed(command *tcp.TcpCommand) *tcp.TcpCommand { //this function should only be called if the client closed connection, not when closing is because of win
-	closer := r.player2
-	sendTo := r.player1
-	if command.Connection == r.player1.connection {
-		closer = r.player1
-		sendTo = r.player2
-	}
+    closer, sendTo := r.GetPlayers(*command)
 	sendTo.connection.GameOver = true
 
 	r.log.Debug("gameroom closing", "close initiated by", closer.username)
@@ -79,6 +85,37 @@ func (r *GameRoom) SendMatchFound() { //when a room is set up, send the correct 
     r.player2.connection.Send(cmd.EncodeToBytes())
 }
 
+func (r *GameRoom) HandleShipsReady(command tcp.TcpCommand) {
+    player, otherPlayer := r.GetPlayers(command)
+
+    if len(player.ships) != 0 { //if the player already has ships send error back
+        cmd := tcp.DataMismatchCommand
+        cmd.Connection = player.connection
+        player.connection.Send(cmd.EncodeToBytes())
+        return
+    }
+
+    err := player.SetShips(command.Data, r.log) //this checks every possible data mismatch that can happen while parsing ships (overlapping, out of bounds positions, ship positions not being besides each other)
+    if err != nil { //if there is an error, send it to the client
+        tcpError, ok := err.(tcp.TcpError)
+        assert.Assert(ok, "parsing ships should only return tcpErrors", "got err", err)
+        r.log.Warning("parsing ship returned error", "err", tcpError.Error())
+        r.log.Debug("sending error message to client from parsing ships", "cmd", tcpError.Command.EncodeToBytes())
+        player.connection.Send(tcpError.Command.EncodeToBytes())
+        return
+    }
+
+    //inform the other player about current player readiness
+    cmd := tcp.TcpCommand{
+        Connection: otherPlayer.connection,
+        Type: tcp.CommandType.PlayerReady,
+        Data: make([]byte, 0),
+    }
+    otherPlayer.connection.Send(cmd.EncodeToBytes())
+
+    //TODO: the 30s countdown limit
+}
+
 func (r *GameRoom) Loop() {
 	for {
 		command, ok := <- r.MessageChan
@@ -92,6 +129,8 @@ func (r *GameRoom) Loop() {
 			cmd := r.HandleConnectionClosed(&command)
 			r.CloseRoom(cmd)
 			return
+        case tcp.CommandType.ShipsReady:
+            r.HandleShipsReady(command)
         default: //any other command type is unexpected
             cmd := tcp.CommandTypeMismatchCommand
             cmd.Connection = command.Connection

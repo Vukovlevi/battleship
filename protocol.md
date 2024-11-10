@@ -12,7 +12,7 @@
     - 2: duplicate username - data: none [server -> client] => this message informs the client that a user with that name is already in mm*
     - 3: match found - data: opponent username (string in bytes format) [server -> client] => this message informs the client about a room* being set up with the opponent user's name
     - 4: ships ready - data: ships* [client -> server] => this message informs the server about a user being ready with the locations of the user's ships
-    - 5: player ready - data: none [server -> client] => this message informs the user about the opponent' readyness (the user now has 30 seconds to finish placing his ships or else the match will be cancelled)
+    - 5: player ready - data: none [server -> client] => this message informs the user about the opponent' readiness (the user now has 30 seconds to finish placing his ships or else the match will be cancelled with connection closed like behaviour)
     - 6: match start - data: starting information* [server -> client] => this message informs the user that the match has started with the information on who has the first turn
     - 7: player guess - data: spot* [client -> server] => this message informs the server about a player's guess on opponents ship position
     - 8: guess confirm - data: spot feedback* [server -> client] => this message informs the user wether the guess was successful
@@ -33,6 +33,8 @@
 | - - - - - - - - |                                             | - - - - - - - - | - - - - - - - - |
 (how many bytes is there that contains this ships's spots)         (spot*: [x; y] -> x * 1000 + y)
 (eg.: in case of 1 spot - 2 [spots* length = spot* count * 2])     (eg.: in case of [8; 7] -> 8007)
+
+    - a ship's positions' encoding should always start at the top left corner, and the go down or left from there
 
 ### Starting information*:
 1 byte: information
@@ -75,4 +77,5 @@
 
     - 0: version mismatch (the package sent by the client did not match the protocol version used by the server)
     - 1: length mismatch (the package sent by the client did not match the length that itself specified)
-    - 2: command type* mismatch (the command type* sent by the client was unexpected during the phase of the game, therefore could not be processed), it is also returned when an expected command type has unexpected data
+    - 2: command type* mismatch (the command type* sent by the client was unexpected during the phase of the game, therefore could not be processed)
+    - 3: data mismatch (when an expected command type doesn't have the expected data)

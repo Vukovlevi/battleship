@@ -21,15 +21,15 @@ type CommandTypeEnum struct {
 
 type TcpError struct {
 	msg string
-	command TcpCommand
+	Command TcpCommand
 }
 
 func (t TcpError) Error() string {
 	return t.msg
 }
 
-func createTcpError(msg string, command TcpCommand) TcpError {
-	return TcpError{msg: msg, command: command}
+func CreateTcpError(msg string, command TcpCommand) TcpError {
+	return TcpError{msg: msg, Command: command}
 }
 
 var (
@@ -70,6 +70,12 @@ var (
 		Type: CommandType.Mismatch,
 		Data: []byte{2},
 	}
+
+	DataMismatchCommand = TcpCommand{
+		Connection: nil,
+		Type: CommandType.Mismatch,
+		Data: []byte{3},
+	}
 )
 
 type TcpCommand struct {
@@ -90,7 +96,7 @@ func (t *TcpCommand) EncodeToBytes() []byte {
 
 func parseTcpCommand(data []byte) (*TcpCommand, error) {
 	if data[VERSION_OFFSET:VERSION_OFFSET + VERSION_SIZE][0] != VERSION {
-		err := createTcpError(fmt.Sprintf("version mismatch, expected: %d, got: %d", VERSION, data[VERSION_OFFSET:VERSION_OFFSET+VERSION_SIZE][0]), VersionMismatchCommand)
+		err := CreateTcpError(fmt.Sprintf("version mismatch, expected: %d, got: %d", VERSION, data[VERSION_OFFSET:VERSION_OFFSET+VERSION_SIZE][0]), VersionMismatchCommand)
 		return nil, err
 	}
 
@@ -99,7 +105,7 @@ func parseTcpCommand(data []byte) (*TcpCommand, error) {
 
 	length := binary.BigEndian.Uint16(data[DATA_LENGTH_OFFSET:DATA_LENGTH_OFFSET + DATA_LENGTH_SIZE])
 	if HEADER_OFFSET + length != uint16(len(data)) {
-		err := createTcpError(fmt.Sprintf("length mismatch, expected(len): %d, got(len): %d, data: %v, data as string: %s", HEADER_OFFSET + length, len(data), data, string(data)), LengthMismatchCommand)
+		err := CreateTcpError(fmt.Sprintf("length mismatch, expected(len): %d, got(len): %d, data: %v, data as string: %s", HEADER_OFFSET + length, len(data), data, string(data)), LengthMismatchCommand)
 		return nil, err
 	}
 
