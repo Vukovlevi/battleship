@@ -135,6 +135,27 @@ func TestEndToEnd(t *testing.T) {
 	assert.Assert(!testGameServer.MatchMaking.HasPlayer(string(joinPlayer2Command.Data)), "user should not exist in mm", "user", string(joinPlayer2Command.Data))
 	assert.Assert(len(testGameServer.Rooms) == 1, "there should be 1 gameroom", "found gamerooms", len(testGameServer.Rooms))
 
+    //receiving game found msg
+    buf = make([]byte, 256)
+    n, err = conn1.Read(buf)
+    assert.Assert(n > 0, "message should be longer than 0 byte when testing match found command on conn1", "n", n)
+    assert.Nil(err, "there should be no error reading match found command on conn1", "err", err)
+    username := string(buf[tcp.HEADER_OFFSET:n])
+    messageType := buf[tcp.MESSAGE_TYPE_OFFSET:tcp.MESSAGE_TYPE_OFFSET + tcp.MESSAGE_TYPE_SIZE][0]
+    assert.Assert(messageType == 3, "command type should 3 on match found event on conn1", "got type", messageType)
+    assert.Assert(username == "jozsi", "client should receive the other player's name", "received info", username)
+	time.Sleep(time.Millisecond * 10)
+
+    buf = make([]byte, 256)
+    n, err = conn2.Read(buf)
+    assert.Assert(n > 0, "message should be longer than 0 byte when testing match found command on conn2", "n", n)
+    assert.Nil(err, "there should be no error reading match found command on conn2", "err", err)
+    username = string(buf[tcp.HEADER_OFFSET:n])
+    messageType = buf[tcp.MESSAGE_TYPE_OFFSET:tcp.MESSAGE_TYPE_OFFSET + tcp.MESSAGE_TYPE_SIZE][0]
+    assert.Assert(messageType == 3, "command type should 3 on match found event on conn2", "got type", messageType)
+    assert.Assert(username == "vukovlevi", "client should receive the other player's name", "received info", username)
+	time.Sleep(time.Millisecond * 10)
+
 	//testing one player disconnecting
 	conn1.Close()
 	buf = make([]byte, 256)
