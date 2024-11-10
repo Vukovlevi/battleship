@@ -81,5 +81,6 @@ func (p *Player) SetShips(data []byte, log *logger.Logger) error { //the data is
     assert.Assert(len(shipMap) == 0, "every ship len should be deleted with it's count from shipmap if there is no error", "remaining map", shipMap)
 
     p.ships = ships
+    log.Debug("players ships", "player", p.username, "ships", p.ships)
     return nil
 }

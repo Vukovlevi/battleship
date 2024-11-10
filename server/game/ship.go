@@ -2,6 +2,7 @@ package game
 
 import (
 	"encoding/binary"
+	"slices"
 
 	"github.com/vukovlevi/battleship/server/logger"
 	"github.com/vukovlevi/battleship/server/tcp"
@@ -17,7 +18,7 @@ type Ship struct {
 }
 
 func parseSingleShip(data []byte, log *logger.Logger) (Ship, error) { //the data contains the informations of spots and only spots
-    if len(data) % 2 == 0 {
+    if len(data) % 2 != 0 {
         log.Warning("the len of spots should always be even because one spot is 2 bytes long", "len spots", len(data))
         cmd := tcp.DataMismatchCommand
         err := tcp.CreateTcpError("the len of spots should always be even because one spot is 2 bytes long", cmd)
@@ -51,6 +52,7 @@ func checkValidShipPositions(ship Ship, log *logger.Logger) error {
     for pos := range ship.positions {
         positions = append(positions, pos)
     }
+    slices.Sort(positions)
 
     if positions[0] + stepSize != positions[1] { //change positions to vertical if not horizontal
         stepSize = 1000
@@ -81,6 +83,14 @@ func parseShips(data []byte, log *logger.Logger) ([]Ship, error) { //the data is
     for idx < len(data) {
 
         spotsLen := int(data[idx]) //get how many spots does the current ship have
+
+        if idx + SPOT_LEN_SIZE + spotsLen > len(data) {
+            log.Warning("spots len is out of bounds", "max len", len(data), "tried len", idx + SPOT_LEN_SIZE + spotsLen)
+            cmd := tcp.DataMismatchCommand
+            err := tcp.CreateTcpError("spots len is out of bounds", cmd)
+            return []Ship{}, err
+        }
+
         ship, err := parseSingleShip(data[idx + SPOT_LEN_SIZE: idx + SPOT_LEN_SIZE + spotsLen], log) //parse ship with that many spots
 
         if err != nil {

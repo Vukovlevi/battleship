@@ -86,6 +86,7 @@ func (r *GameRoom) SendMatchFound() { //when a room is set up, send the correct 
 }
 
 func (r *GameRoom) HandleShipsReady(command tcp.TcpCommand) {
+    //TODO: create a state for the room, to know which command types to expect
     player, otherPlayer := r.GetPlayers(command)
 
     if len(player.ships) != 0 { //if the player already has ships send error back

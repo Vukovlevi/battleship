@@ -1,6 +1,7 @@
 package e2e_test
 
 import (
+	"encoding/binary"
 	"fmt"
 	"io"
 	"net"
@@ -158,6 +159,232 @@ func TestEndToEnd(t *testing.T) {
     log.Debug("client got message on conn2", "msg", buf[:n])
     time.Sleep(time.Millisecond * 10)
 
+    //testing ship parsing with command type mismatch error
+    cmd := tcp.TcpCommand{
+        Connection: nil,
+        Type: tcp.CommandType.DuplicateUsername,
+        Data: make([]byte, 0),
+    }
+
+    conn1.Write(cmd.EncodeToBytes())
+    time.Sleep(time.Millisecond * 10)
+    buf = make([]byte, 256)
+    n, err = conn1.Read(buf)
+    assert.Assert(n > 0, "message should be longer than 0 byte when testing cmd mismatch while parsing ship", "n", n)
+    assert.Nil(err, "there should be no error on cmd mismatch while parsing ship", "err", err)
+    cmdType := buf[tcp.MESSAGE_TYPE_OFFSET: tcp.MESSAGE_TYPE_OFFSET + tcp.MESSAGE_TYPE_SIZE][0]
+    assert.Assert(cmdType == tcp.CommandType.Mismatch, "there should be a cmd type mismatch", "got cmd type", cmdType)
+    mismatchType := buf[tcp.HEADER_OFFSET]
+    assert.Assert(mismatchType == 2, "there should be a cmd type mismatch", "got mismatch type", mismatchType)
+
+    //testing ship parsing with data mismatch - spot len mismatch
+    cmd.Type = tcp.CommandType.ShipsReady
+    cmd.Data = make([]byte, 5)
+    cmd.Data[0] = 3
+    binary.BigEndian.PutUint16(cmd.Data[1:], 1001)
+    binary.BigEndian.PutUint16(cmd.Data[3:], 1002)
+    conn1.Write(cmd.EncodeToBytes())
+    time.Sleep(time.Millisecond * 10)
+    buf = make([]byte, 256)
+    n, err = conn1.Read(buf)
+    assert.Assert(n > 0, "message should be longer than 0 byte when testing data mismatch while parsing ship", "n", n)
+    assert.Nil(err, "there should be no error on data mismatch while parsing ship", "err", err)
+    cmdType = buf[tcp.MESSAGE_TYPE_OFFSET: tcp.MESSAGE_TYPE_OFFSET + tcp.MESSAGE_TYPE_SIZE][0]
+    assert.Assert(cmdType == tcp.CommandType.Mismatch, "there should be a data mismatch", "got cmd type", cmdType)
+    mismatchType = buf[tcp.HEADER_OFFSET]
+    assert.Assert(mismatchType == 3, "there should be a data mismatch", "got mismatch type", mismatchType)
+
+    //testing ship parsing with data mismatch - spot len mismatch
+    cmd.Type = tcp.CommandType.ShipsReady
+    cmd.Data = make([]byte, 6)
+    cmd.Data[0] = 4
+    binary.BigEndian.PutUint16(cmd.Data[1:], 1001)
+    binary.BigEndian.PutUint16(cmd.Data[3:], 1002)
+    cmd.Data[5] = 8
+    conn1.Write(cmd.EncodeToBytes())
+    time.Sleep(time.Millisecond * 10)
+    buf = make([]byte, 256)
+    n, err = conn1.Read(buf)
+    assert.Assert(n > 0, "message should be longer than 0 byte when testing data mismatch while parsing ship", "n", n)
+    assert.Nil(err, "there should be no error on data mismatch while parsing ship", "err", err)
+    cmdType = buf[tcp.MESSAGE_TYPE_OFFSET: tcp.MESSAGE_TYPE_OFFSET + tcp.MESSAGE_TYPE_SIZE][0]
+    assert.Assert(cmdType == tcp.CommandType.Mismatch, "there should be a data mismatch", "got cmd type", cmdType)
+    mismatchType = buf[tcp.HEADER_OFFSET]
+    assert.Assert(mismatchType == 3, "there should be a data mismatch", "got mismatch type", mismatchType)
+
+    //testing ship parsing with data mismatch - spot max value mismatch
+    cmd.Type = tcp.CommandType.ShipsReady
+    cmd.Data = make([]byte, 5)
+    cmd.Data[0] = 4
+    binary.BigEndian.PutUint16(cmd.Data[1:], 1011)
+    binary.BigEndian.PutUint16(cmd.Data[3:], 1012)
+    conn1.Write(cmd.EncodeToBytes())
+    time.Sleep(time.Millisecond * 10)
+    buf = make([]byte, 256)
+    n, err = conn1.Read(buf)
+    assert.Assert(n > 0, "message should be longer than 0 byte when testing data mismatch while parsing ship", "n", n)
+    assert.Nil(err, "there should be no error on data mismatch while parsing ship", "err", err)
+    cmdType = buf[tcp.MESSAGE_TYPE_OFFSET: tcp.MESSAGE_TYPE_OFFSET + tcp.MESSAGE_TYPE_SIZE][0]
+    assert.Assert(cmdType == tcp.CommandType.Mismatch, "there should be a data mismatch", "got cmd type", cmdType)
+    mismatchType = buf[tcp.HEADER_OFFSET]
+    assert.Assert(mismatchType == 3, "there should be a data mismatch", "got mismatch type", mismatchType)
+
+    //testing ship parsing with data mismatch - spot min value mismatch
+    cmd.Type = tcp.CommandType.ShipsReady
+    cmd.Data = make([]byte, 5)
+    cmd.Data[0] = 4
+    binary.BigEndian.PutUint16(cmd.Data[1:], 1000)
+    binary.BigEndian.PutUint16(cmd.Data[3:], 1001)
+    conn1.Write(cmd.EncodeToBytes())
+    time.Sleep(time.Millisecond * 10)
+    buf = make([]byte, 256)
+    n, err = conn1.Read(buf)
+    assert.Assert(n > 0, "message should be longer than 0 byte when testing data mismatch while parsing ship", "n", n)
+    assert.Nil(err, "there should be no error on data mismatch while parsing ship", "err", err)
+    cmdType = buf[tcp.MESSAGE_TYPE_OFFSET: tcp.MESSAGE_TYPE_OFFSET + tcp.MESSAGE_TYPE_SIZE][0]
+    assert.Assert(cmdType == tcp.CommandType.Mismatch, "there should be a data mismatch", "got cmd type", cmdType)
+    mismatchType = buf[tcp.HEADER_OFFSET]
+    assert.Assert(mismatchType == 3, "there should be a data mismatch", "got mismatch type", mismatchType)
+
+    //testing ship parsing with data mismatch - spots not beside each other horizontally
+    cmd.Type = tcp.CommandType.ShipsReady
+    cmd.Data = make([]byte, 5)
+    cmd.Data[0] = 4
+    binary.BigEndian.PutUint16(cmd.Data[1:], 1001)
+    binary.BigEndian.PutUint16(cmd.Data[3:], 1003)
+    conn1.Write(cmd.EncodeToBytes())
+    time.Sleep(time.Millisecond * 10)
+    buf = make([]byte, 256)
+    n, err = conn1.Read(buf)
+    assert.Assert(n > 0, "message should be longer than 0 byte when testing data mismatch while parsing ship", "n", n)
+    assert.Nil(err, "there should be no error on data mismatch while parsing ship", "err", err)
+    cmdType = buf[tcp.MESSAGE_TYPE_OFFSET: tcp.MESSAGE_TYPE_OFFSET + tcp.MESSAGE_TYPE_SIZE][0]
+    assert.Assert(cmdType == tcp.CommandType.Mismatch, "there should be a data mismatch", "got cmd type", cmdType)
+    mismatchType = buf[tcp.HEADER_OFFSET]
+    assert.Assert(mismatchType == 3, "there should be a data mismatch", "got mismatch type", mismatchType)
+
+    //testing ship parsing with data mismatch - spots not beside each other vertically
+    cmd.Type = tcp.CommandType.ShipsReady
+    cmd.Data = make([]byte, 5)
+    cmd.Data[0] = 4
+    binary.BigEndian.PutUint16(cmd.Data[1:], 1001)
+    binary.BigEndian.PutUint16(cmd.Data[3:], 3001)
+    conn1.Write(cmd.EncodeToBytes())
+    time.Sleep(time.Millisecond * 10)
+    buf = make([]byte, 256)
+    n, err = conn1.Read(buf)
+    assert.Assert(n > 0, "message should be longer than 0 byte when testing data mismatch while parsing ship", "n", n)
+    assert.Nil(err, "there should be no error on data mismatch while parsing ship", "err", err)
+    cmdType = buf[tcp.MESSAGE_TYPE_OFFSET: tcp.MESSAGE_TYPE_OFFSET + tcp.MESSAGE_TYPE_SIZE][0]
+    assert.Assert(cmdType == tcp.CommandType.Mismatch, "there should be a data mismatch", "got cmd type", cmdType)
+    mismatchType = buf[tcp.HEADER_OFFSET]
+    assert.Assert(mismatchType == 3, "there should be a data mismatch", "got mismatch type", mismatchType)
+
+    //testing ship parsing with data mismatch - not enough ship
+    cmd.Type = tcp.CommandType.ShipsReady
+    cmd.Data = make([]byte, 5)
+    cmd.Data[0] = 4
+    binary.BigEndian.PutUint16(cmd.Data[1:], 1001)
+    binary.BigEndian.PutUint16(cmd.Data[3:], 1002)
+    conn1.Write(cmd.EncodeToBytes())
+    time.Sleep(time.Millisecond * 10)
+    buf = make([]byte, 256)
+    n, err = conn1.Read(buf)
+    assert.Assert(n > 0, "message should be longer than 0 byte when testing data mismatch while parsing ship", "n", n)
+    assert.Nil(err, "there should be no error on data mismatch while parsing ship", "err", err)
+    cmdType = buf[tcp.MESSAGE_TYPE_OFFSET: tcp.MESSAGE_TYPE_OFFSET + tcp.MESSAGE_TYPE_SIZE][0]
+    assert.Assert(cmdType == tcp.CommandType.Mismatch, "there should be a data mismatch", "got cmd type", cmdType)
+    mismatchType = buf[tcp.HEADER_OFFSET]
+    assert.Assert(mismatchType == 3, "there should be a data mismatch", "got mismatch type", mismatchType)
+
+    //testing ship parsing with data mismatch - too many 2-len ships
+    cmd.Type = tcp.CommandType.ShipsReady
+    cmd.Data = make([]byte, 25)
+    //putting 5 ships to pass the enough ship check before
+    cmd.Data[0] = 4
+    binary.BigEndian.PutUint16(cmd.Data[1:], 1001)
+    binary.BigEndian.PutUint16(cmd.Data[3:], 1002)
+    cmd.Data[5] = 4
+    binary.BigEndian.PutUint16(cmd.Data[6:], 2001)
+    binary.BigEndian.PutUint16(cmd.Data[8:], 2002)
+    cmd.Data[10] = 4
+    binary.BigEndian.PutUint16(cmd.Data[11:], 3001)
+    binary.BigEndian.PutUint16(cmd.Data[13:], 3002)
+    cmd.Data[15] = 4
+    binary.BigEndian.PutUint16(cmd.Data[16:], 4001)
+    binary.BigEndian.PutUint16(cmd.Data[18:], 4002)
+    cmd.Data[20] = 4
+    binary.BigEndian.PutUint16(cmd.Data[21:], 5001)
+    binary.BigEndian.PutUint16(cmd.Data[23:], 5002)
+    //checking results
+    conn1.Write(cmd.EncodeToBytes())
+    time.Sleep(time.Millisecond * 10)
+    buf = make([]byte, 256)
+    n, err = conn1.Read(buf)
+    assert.Assert(n > 0, "message should be longer than 0 byte when testing data mismatch while parsing ship", "n", n)
+    assert.Nil(err, "there should be no error on data mismatch while parsing ship", "err", err)
+    cmdType = buf[tcp.MESSAGE_TYPE_OFFSET: tcp.MESSAGE_TYPE_OFFSET + tcp.MESSAGE_TYPE_SIZE][0]
+    assert.Assert(cmdType == tcp.CommandType.Mismatch, "there should be a data mismatch", "got cmd type", cmdType)
+    mismatchType = buf[tcp.HEADER_OFFSET]
+    assert.Assert(mismatchType == 3, "there should be a data mismatch", "got mismatch type", mismatchType)
+
+    //testing ship parsing with data mismatch - overlapping ships
+    cmd.Type = tcp.CommandType.ShipsReady
+    cmd.Data = make([]byte, 25)
+    //putting 5 ships to pass the enough ship check before
+    cmd.Data[0] = 4
+    binary.BigEndian.PutUint16(cmd.Data[1:], 1001)
+    binary.BigEndian.PutUint16(cmd.Data[3:], 1002)
+    cmd.Data[5] = 4
+    binary.BigEndian.PutUint16(cmd.Data[6:], 1002)
+    binary.BigEndian.PutUint16(cmd.Data[8:], 1003)
+    cmd.Data[10] = 4
+    binary.BigEndian.PutUint16(cmd.Data[11:], 3001)
+    binary.BigEndian.PutUint16(cmd.Data[13:], 3002)
+    cmd.Data[15] = 4
+    binary.BigEndian.PutUint16(cmd.Data[16:], 4001)
+    binary.BigEndian.PutUint16(cmd.Data[18:], 4002)
+    cmd.Data[20] = 4
+    binary.BigEndian.PutUint16(cmd.Data[21:], 5001)
+    binary.BigEndian.PutUint16(cmd.Data[23:], 5002)
+    //checking results
+    conn1.Write(cmd.EncodeToBytes())
+    time.Sleep(time.Millisecond * 10)
+    buf = make([]byte, 256)
+    n, err = conn1.Read(buf)
+    assert.Assert(n > 0, "message should be longer than 0 byte when testing data mismatch while parsing ship", "n", n)
+    assert.Nil(err, "there should be no error on data mismatch while parsing ship", "err", err)
+    cmdType = buf[tcp.MESSAGE_TYPE_OFFSET: tcp.MESSAGE_TYPE_OFFSET + tcp.MESSAGE_TYPE_SIZE][0]
+    assert.Assert(cmdType == tcp.CommandType.Mismatch, "there should be a data mismatch", "got cmd type", cmdType)
+    mismatchType = buf[tcp.HEADER_OFFSET]
+    assert.Assert(mismatchType == 3, "there should be a data mismatch", "got mismatch type", mismatchType)
+
+    //testing ship parsing with correct info - player1
+    cmd.Type = tcp.CommandType.ShipsReady
+    cmd.Data = getCorrectShips()
+    //checking results
+    conn1.Write(cmd.EncodeToBytes())
+    time.Sleep(time.Millisecond * 10)
+    buf = make([]byte, 256)
+    n, err = conn2.Read(buf)
+    assert.Assert(n > 0, "message should be longer than 0 byte when testing ship parsing on conn1", "n", n)
+    assert.Nil(err, "there should be no error on ship parsing on conn1", "err", err)
+    cmdType = buf[tcp.MESSAGE_TYPE_OFFSET: tcp.MESSAGE_TYPE_OFFSET + tcp.MESSAGE_TYPE_SIZE][0]
+    assert.Assert(cmdType == tcp.CommandType.PlayerReady, "there should be a player ready command on conn2", "got cmd type", cmdType)
+
+    //testing ship parsing with correct info - player2
+    cmd.Type = tcp.CommandType.ShipsReady
+    cmd.Data = getCorrectShips()
+    //checking results
+    conn2.Write(cmd.EncodeToBytes())
+    time.Sleep(time.Millisecond * 10)
+    buf = make([]byte, 256)
+    n, err = conn1.Read(buf)
+    assert.Assert(n > 0, "message should be longer than 0 byte when testing ship parsing on conn2", "n", n)
+    assert.Nil(err, "there should be no error on ship parsing on conn2", "err", err)
+    cmdType = buf[tcp.MESSAGE_TYPE_OFFSET: tcp.MESSAGE_TYPE_OFFSET + tcp.MESSAGE_TYPE_SIZE][0]
+    assert.Assert(cmdType == tcp.CommandType.PlayerReady, "there should be a player ready command conn1", "got cmd type", cmdType)
+
 	//testing one player disconnecting
 	conn1.Close()
 	buf = make([]byte, 256)
@@ -167,9 +394,7 @@ func TestEndToEnd(t *testing.T) {
 	assert.Assert(len(testGameServer.Rooms) == 0, "all rooms should be deleted", "rooms", len(testGameServer.Rooms))
 	assert.Assert(len(testGameServer.MatchMaking.Players) == 0, "there should not be any player in mm", "mm len", len(testGameServer.MatchMaking.Players))
 
-	t.Log("anyad")
 	n, err = conn2.Read(buf)
-	t.Log("anyad2")
 	assert.Nil(err, "reading from second connection should not return error", "err", err)
 	assert.Assert(n > 0, "read bytes should be more than 0 when game over")
 	log.Debug("client got message", "buf", buf[:n])
@@ -178,4 +403,42 @@ func TestEndToEnd(t *testing.T) {
 	conn2.Close()
 	time.Sleep(time.Millisecond * 10)
 	assert.Assert(len(testTcpServer.Connections) == 0, "there should be no connections left", "con len", len(testTcpServer.Connections))
+}
+
+func getCorrectShips() []byte {
+    data := make([]byte, 39)
+
+    //ship1 - len: 2
+    data[0] = 4
+    binary.BigEndian.PutUint16(data[1:], 1001)
+    binary.BigEndian.PutUint16(data[3:], 1002)
+
+    //ship2 - len: 3
+    data[5] = 6
+    binary.BigEndian.PutUint16(data[6:], 2001)
+    binary.BigEndian.PutUint16(data[8:], 3001)
+    binary.BigEndian.PutUint16(data[10:], 4001)
+
+    //ship3 - len: 3
+    data[12] = 6
+    binary.BigEndian.PutUint16(data[13:], 9007)
+    binary.BigEndian.PutUint16(data[15:], 9008)
+    binary.BigEndian.PutUint16(data[17:], 9009)
+
+    //ship4 - len: 4
+    data[19] = 8
+    binary.BigEndian.PutUint16(data[20:], 7010)
+    binary.BigEndian.PutUint16(data[22:], 8010)
+    binary.BigEndian.PutUint16(data[24:], 9010)
+    binary.BigEndian.PutUint16(data[26:], 10010)
+
+    //ship5 - len: 5
+    data[28] = 10
+    binary.BigEndian.PutUint16(data[29:], 5004)
+    binary.BigEndian.PutUint16(data[31:], 5005)
+    binary.BigEndian.PutUint16(data[33:], 5006)
+    binary.BigEndian.PutUint16(data[35:], 5007)
+    binary.BigEndian.PutUint16(data[37:], 5008)
+
+    return data
 }
