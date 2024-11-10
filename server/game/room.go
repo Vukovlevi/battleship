@@ -24,27 +24,28 @@ type GameRoom struct {
 
 func (r *GameRoom) CloseRoom(command *tcp.TcpCommand) {
 	r.log.Info("closing room", "player1", r.player1.username, "player2", r.player2.username)
-	if command != nil {
+	if command != nil { //send the players the initiating close command -> should be game over
 		r.player1.connection.Send(command.EncodeToBytes())
 		r.player2.connection.Send(command.EncodeToBytes())
 	}
 
 	close(r.MessageChan)
-	r.closeChan <- r
+	r.closeChan <- r //inform the game server about this room being closed
 }
 
-func (r *GameRoom) GetStatsByte(closer *Player, sendingTo *Player) []byte {
-	if closer != nil {
+func (r *GameRoom) GetStatsByte(closer *Player, sendingTo *Player) []byte { //set closer to nil if the room is closed because of win
+	if closer != nil { //this means the game is not over correctly, a player has closed the connection
 		assert.Assert(closer != sendingTo, "sending stats to the player closing the connection is not possible", "closer", closer.username, "sendintTo", sendingTo.username)
 
 		firstByte := playerLeftClosed | loser
 		return []byte{firstByte, 0}
 	}
+    //TODO: return back the real data if game is closed by win
 
 	return make([]byte, 0)
 }
 
-func (r *GameRoom) HandleConnectionClosed(command *tcp.TcpCommand) *tcp.TcpCommand {
+func (r *GameRoom) HandleConnectionClosed(command *tcp.TcpCommand) *tcp.TcpCommand { //this function should only be called if the client closed connection, not when closing is because of win
 	closer := r.player2
 	sendTo := r.player1
 	if command.Connection == r.player1.connection {
@@ -65,7 +66,7 @@ func (r *GameRoom) HandleConnectionClosed(command *tcp.TcpCommand) *tcp.TcpComma
 	return &cmd
 }
 
-func (r *GameRoom) SendMatchFound() {
+func (r *GameRoom) SendMatchFound() { //when a room is set up, send the correct command to the clients
     cmd := tcp.TcpCommand{
         Connection: r.player1.connection,
         Type: tcp.CommandType.MatchFound,
@@ -87,11 +88,11 @@ func (r *GameRoom) Loop() {
 		}
 
 		switch command.Type {
-		case tcp.CommandType.Close:
+		case tcp.CommandType.Close: //close room if close command occures
 			cmd := r.HandleConnectionClosed(&command)
 			r.CloseRoom(cmd)
 			return
-        default:
+        default: //any other command type is unexpected
             cmd := tcp.CommandTypeMismatchCommand
             cmd.Connection = command.Connection
             command.Connection.Send(cmd.EncodeToBytes())

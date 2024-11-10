@@ -16,11 +16,11 @@ func CreateConnection(id int, conn net.Conn, sendToChan chan TcpCommand) Connect
         Id: id,
         conn: conn,
         SendToChan: sendToChan,
-        GameOver: false,
+        GameOver: false, //set to true, if the server sent game over event to client, therefore the client can close the connection -> we don't handle it like an unexpected close event
     }
 }
 
-func (c *Connection) NextMsg() (*TcpCommand, error) { //TODO: return value (tcp command)
+func (c *Connection) NextMsg() (*TcpCommand, error) {
     buf := make([]byte, 1024)
     n, err := c.conn.Read(buf)
     if err != nil {

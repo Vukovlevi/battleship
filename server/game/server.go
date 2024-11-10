@@ -12,8 +12,8 @@ type GameServer struct {
 	log *logger.Logger
 	MatchMaking     MatchMaking
 	Rooms           map[*GameRoom]bool
-	IncomingRequestChan chan tcp.TcpCommand
-	GameRoomCloseChan chan *GameRoom
+	IncomingRequestChan chan tcp.TcpCommand //join request handler
+	GameRoomCloseChan chan *GameRoom //a gameroom is being closed handler
 	mutex sync.RWMutex
 }
 
@@ -30,7 +30,7 @@ func NewGameServer(log *logger.Logger) *GameServer {
 
 func (g *GameServer) Start() {
 	go func() {
-		for {
+		for { //delete the gameroom from the server map if it is closed
 			room, ok := <- g.GameRoomCloseChan
 			assert.Assert(ok, "gameroom closing channel should never be closed")
 			g.mutex.Lock()
@@ -43,7 +43,7 @@ func (g *GameServer) Start() {
 	go func() {
 		g.log.Info("game server started")
 		for {
-			msg, ok := <- g.IncomingRequestChan
+			msg, ok := <- g.IncomingRequestChan //handle join requests
 			assert.Assert(ok, "the channel of the game server should always be open")
 			g.log.Debug("game server got a new message", "msg", msg)
 
@@ -54,16 +54,16 @@ func (g *GameServer) Start() {
 
 func handleJoinRequest(g *GameServer, command tcp.TcpCommand) {
 	switch command.Type {
-	case tcp.CommandType.Close:
+	case tcp.CommandType.Close: //on close event delete player from mm, otherwise do nothing
 		if player, ok := g.MatchMaking.HasConnection(command.Connection); ok {
 			g.MatchMaking.mutex.Lock()
 			delete(g.MatchMaking.Players, player)
 			g.MatchMaking.mutex.Unlock()
 		}
         return
-	case tcp.CommandType.JoinRequest:
+	case tcp.CommandType.JoinRequest: //this is expected, we can break the switch and just put the player int mm, which this function does
 		break
-	default:
+	default: //any other command type is unexpected
 		g.log.Warning("command type mismatch while handling join request", "expected type", tcp.CommandType.JoinRequest, "got type", command.Type, "connectionId", command.Connection.Id)
 		cmd := tcp.CommandTypeMismatchCommand
 		cmd.Connection = command.Connection

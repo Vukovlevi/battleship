@@ -57,9 +57,9 @@ func readConnection(server *Server, connection Connection) {
 
         if err != nil {
             switch err {
-            case io.EOF:
+            case io.EOF: //case: the connection was closed correctly
                 msg := ""
-                if connection.GameOver {
+                if connection.GameOver { //check if the connection close was initiated by the server or client
                     msg = "client closed connection on server command"
                 } else {
                     msg = "closing connection on client event"
@@ -67,13 +67,13 @@ func readConnection(server *Server, connection Connection) {
                 }
                 server.log.Info(msg, "connectionId", connection.Id)
                 close = true
-            default:
-                if tcpError, ok := err.(TcpError); ok {
+            default: //case: there is another error
+                if tcpError, ok := err.(TcpError); ok { //if the error was with message we send it back to inform client about bad command
                     server.log.Warning(err.Error(), "connectionId", connection.Id)
                     connection.Send(tcpError.command.EncodeToBytes())
-                } else {
+                } else { //if the client closed connection by force
                     server.log.Warning("unknown error occured while reading connection", "connectionId", connection.Id, "err", err)
-                    sendCloseCommandToGameServer(&connection)
+                    sendCloseCommandToGameServer(&connection) //handle all closing of gamerooms, mm and this tcp connection
                     close = true
                 }
             }
@@ -90,7 +90,7 @@ func readConnection(server *Server, connection Connection) {
 
         server.log.Debug("got message", "connId", connection.Id, "msg", command)
         if command != nil {
-            connection.SendToChan <- *command
+            connection.SendToChan <- *command //if there is a command, send it to the gameserver or the room
         }
     }
 }
