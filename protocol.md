@@ -75,4 +75,4 @@
 
     - 0: version mismatch (the package sent by the client did not match the protocol version used by the server)
     - 1: length mismatch (the package sent by the client did not match the length that itself specified)
-    - 2: command type* mismatch (the command type* sent by the client was unexpected during the phase of the game, therefore could not be processed)
+    - 2: command type* mismatch (the command type* sent by the client was unexpected during the phase of the game, therefore could not be processed), it is also returned when an expected command type has unexpected data

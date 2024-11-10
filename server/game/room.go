@@ -9,7 +9,7 @@ import (
 const (
 	correctlyClosed byte = 0x00
 	playerLeftClosed byte = 0x80
-	
+
 	winner byte = 0x40
 	loser byte = 0x00
 )
@@ -54,7 +54,7 @@ func (r *GameRoom) HandleConnectionClosed(command *tcp.TcpCommand) *tcp.TcpComma
 	sendTo.connection.GameOver = true
 
 	r.log.Debug("gameroom closing", "close initiated by", closer.username)
-	
+
 	cmd := tcp.TcpCommand{
 		Connection: sendTo.connection,
 		Type: tcp.CommandType.GameOver,
@@ -63,6 +63,19 @@ func (r *GameRoom) HandleConnectionClosed(command *tcp.TcpCommand) *tcp.TcpComma
 
 	r.log.Debug("got statistics for other user", "stat", cmd.Data)
 	return &cmd
+}
+
+func (r *GameRoom) SendMatchFound() {
+    cmd := tcp.TcpCommand{
+        Connection: r.player1.connection,
+        Type: tcp.CommandType.MatchFound,
+        Data: []byte(r.player2.username),
+    }
+    r.player1.connection.Send(cmd.EncodeToBytes())
+
+    cmd.Connection = r.player2.connection
+    cmd.Data = []byte(r.player1.username)
+    r.player2.connection.Send(cmd.EncodeToBytes())
 }
 
 func (r *GameRoom) Loop() {
@@ -78,6 +91,10 @@ func (r *GameRoom) Loop() {
 			cmd := r.HandleConnectionClosed(&command)
 			r.CloseRoom(cmd)
 			return
+        default:
+            cmd := tcp.CommandTypeMismatchCommand
+            cmd.Connection = command.Connection
+            command.Connection.Send(cmd.EncodeToBytes())
 		}
 
 		r.log.Debug("gameroom got command", "command", command)

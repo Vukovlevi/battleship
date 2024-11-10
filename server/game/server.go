@@ -110,6 +110,7 @@ func handleJoinRequest(g *GameServer, command tcp.TcpCommand) {
 		g.log.Info("new room set", "player1", room.player1.username, "player2", room.player2.username)
 
 		room.closeChan = g.GameRoomCloseChan
+        room.SendMatchFound()
 		go room.Loop()
 	}
 }
