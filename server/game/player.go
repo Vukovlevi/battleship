@@ -14,6 +14,7 @@ type Player struct {
 	username   string
 	connection *tcp.Connection
 	ships []Ship
+    cannotGuessHereSpots map[int]bool
 }
 
 func getAllShipMap() map[int]int { //returns a map where key is the length of the ship and value is how many ships should with that length
@@ -31,6 +32,20 @@ func getAllShipMap() map[int]int { //returns a map where key is the length of th
     assert.Assert(sum == SHIP_COUNT, "there should be as many ships in the counting map than expected", "expected", SHIP_COUNT, "got", sum)
 
     return allShipMap
+}
+
+func (p *Player) CanGuessSpot(spot int) bool {
+    _, ok := p.cannotGuessHereSpots[spot]
+    return !ok
+}
+
+func (p *Player) IsHit(spot int) bool {
+    for _, ship := range p.ships {
+        if _, ok := ship.positions[spot]; ok {
+            return true
+        }
+    }
+    return false
 }
 
 func (p *Player) SetShips(data []byte, log *logger.Logger) error { //the data is the entire received data with all the ships info
@@ -75,6 +90,7 @@ func (p *Player) SetShips(data []byte, log *logger.Logger) error { //the data is
             }
 
             positions[pos] = true
+            p.cannotGuessHereSpots[pos] = true
         }
     }
 

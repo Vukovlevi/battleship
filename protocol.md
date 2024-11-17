@@ -14,7 +14,7 @@
     - 4: ships ready - data: ships* [client -> server] => this message informs the server about a user being ready with the locations of the user's ships
     - 5: player ready - data: none [server -> client] => this message informs the user about the opponent' readiness (the user now has 30 seconds to finish placing his ships or else the match will be cancelled with connection closed like behaviour)
     - 6: match start - data: starting information* [server -> client] => this message informs the user that the match has started with the information on who has the first turn
-    - 7: player guess - data: spot* [client -> server] => this message informs the server about a player's guess on opponents ship position
+    - 7: player guess - data: spot* [client -> server -> other client] => this message informs the server about a player's guess on opponents ship position
     - 8: guess confirm - data: spot feedback* [server -> client] => this message informs the user wether the guess was successful
     - 9: game over - data: stats* [server -> client] => this message informs the client about a game being over with the statistics of the match
     - 10: close event - data: none [server -> server, server -> client] => this message informs either the server or the client about a connection being closed, therefore every other connection and open room can be closed

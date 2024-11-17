@@ -1,6 +1,8 @@
 package game
 
 import (
+	"encoding/binary"
+
 	"github.com/vukovlevi/battleship/server/assert"
 	"github.com/vukovlevi/battleship/server/logger"
 	"github.com/vukovlevi/battleship/server/tcp"
@@ -14,6 +16,12 @@ const (
 	loser byte = 0x00
 
     waitingForShips = "waitingForShips"
+
+    notYourTurn byte = 0
+    invalidSpot byte = 1
+    miss byte = 2
+    hit byte = 3
+    shiftGuessConfirmBy = 6
 )
 
 type GameRoom struct {
@@ -140,6 +148,35 @@ func (r *GameRoom) HandleShipsReady(command tcp.TcpCommand) {
     //TODO: the 30s countdown limit
 }
 
+func (r *GameRoom) HandlePlayerGuess(command tcp.TcpCommand) {
+    player, otherPlayer := r.GetPlayers(command)
+
+    if r.state != player.username { //if its not the players turn send back an error message
+        cmd := tcp.TcpCommand{
+            Type: tcp.CommandType.GuessConfirm,
+            Data: []byte{notYourTurn << shiftGuessConfirmBy},
+            Connection: player.connection,
+        }
+        player.connection.Send(cmd.EncodeToBytes())
+        return
+    }
+
+    spot := int(binary.BigEndian.Uint16(command.Data)) //get the spot the player has guessed
+    if !player.CanGuessSpot(spot) { //if he cannot guess that spot return error
+        cmd := tcp.TcpCommand{
+            Type: tcp.CommandType.GuessConfirm,
+            Data: []byte{invalidSpot << shiftGuessConfirmBy},
+            Connection: player.connection,
+        }
+        player.connection.Send(cmd.EncodeToBytes())
+        return
+    }
+
+    if otherPlayer.IsHit(spot) {
+        //TODO: change ishit to return 2 bools, isHit and didShrink
+    }
+}
+
 func (r *GameRoom) Loop() {
     r.state = waitingForShips
 	for {
@@ -156,6 +193,8 @@ func (r *GameRoom) Loop() {
 			return
         case tcp.CommandType.ShipsReady:
             r.HandleShipsReady(command)
+        case tcp.CommandType.PlayerGuess:
+            r.HandlePlayerGuess(command)
         default: //any other command type is unexpected
             cmd := tcp.CommandTypeMismatchCommand
             cmd.Connection = command.Connection
