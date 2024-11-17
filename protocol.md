@@ -59,7 +59,7 @@
 ### Stats*:
 1 byte: game/ship info          1 byte: hit info
 | - | - | - - - | - - - |      | - - - - - - - - |
-(0-1)(0-1)(0-3)
+(0-1)(0-1)(0-7)
 
     - 0: the game is over because a player has won
     - 1: the game is over because a player left, therefore there is no winner
