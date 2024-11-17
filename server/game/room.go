@@ -173,6 +173,10 @@ func (r *GameRoom) HandlePlayerGuess(command tcp.TcpCommand) {
         return
     }
 
+    //send player guess to other player for displaying reasons
+    otherPlayer.connection.Send(command.EncodeToBytes())
+
+    //calculate guess confirm for player
     hit, sink := otherPlayer.IsHit(spot)
     cmd := tcp.TcpCommand{
         Type: tcp.CommandType.GuessConfirm,
@@ -185,8 +189,15 @@ func (r *GameRoom) HandlePlayerGuess(command tcp.TcpCommand) {
         cmd.Data = []byte{miss << shiftGuessConfirmBy}
     }
 
-    //ez nem jo, gondold at megint te vadbarom
-    cmd.Data[0] = cmd.Data[0] & (sink << shiftGuessSinkBy)
+    // 00100000 -- sink shifted
+    // 11000000 -- hit shifted
+    // 11100000 -- result of or
+    cmd.Data[0] = cmd.Data[0] | (sink << shiftGuessSinkBy) //setting the data according to protocol specification
+    player.connection.Send(cmd.EncodeToBytes()) //send guess confirm to player
+
+    player.cannotGuessHereSpots[spot] = true //mark spot as unguessable
+    r.state = otherPlayer.username //set the state for the other user's turn
+    //TODO: game over event (make method for player struct that returns the total health)
 }
 
 func (r *GameRoom) Loop() {

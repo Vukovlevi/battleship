@@ -95,7 +95,6 @@ func (p *Player) SetShips(data []byte, log *logger.Logger) error { //the data is
             }
 
             positions[pos] = true
-            p.cannotGuessHereSpots[pos] = true
         }
     }
 
