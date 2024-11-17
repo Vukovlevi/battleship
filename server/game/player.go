@@ -39,13 +39,18 @@ func (p *Player) CanGuessSpot(spot int) bool {
     return !ok
 }
 
-func (p *Player) IsHit(spot int) bool {
+func (p *Player) IsHit(spot int) (bool, byte) {
     for _, ship := range p.ships {
         if _, ok := ship.positions[spot]; ok {
-            return true
+            ship.health--
+            var sink byte = 0
+            if ship.health == 0 {
+                sink = 1
+            }
+            return true, sink
         }
     }
-    return false
+    return false, 0
 }
 
 func (p *Player) SetShips(data []byte, log *logger.Logger) error { //the data is the entire received data with all the ships info

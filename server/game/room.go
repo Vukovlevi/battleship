@@ -20,8 +20,9 @@ const (
     notYourTurn byte = 0
     invalidSpot byte = 1
     miss byte = 2
-    hit byte = 3
+    hitByte byte = 3
     shiftGuessConfirmBy = 6
+    shiftGuessSinkBy = 5
 )
 
 type GameRoom struct {
@@ -172,9 +173,20 @@ func (r *GameRoom) HandlePlayerGuess(command tcp.TcpCommand) {
         return
     }
 
-    if otherPlayer.IsHit(spot) {
-        //TODO: change ishit to return 2 bools, isHit and didShrink
+    hit, sink := otherPlayer.IsHit(spot)
+    cmd := tcp.TcpCommand{
+        Type: tcp.CommandType.GuessConfirm,
+        Connection: player.connection,
     }
+
+    if hit {
+        cmd.Data = []byte{hitByte << shiftGuessConfirmBy}
+    } else {
+        cmd.Data = []byte{miss << shiftGuessConfirmBy}
+    }
+
+    //ez nem jo, gondold at megint te vadbarom
+    cmd.Data[0] = cmd.Data[0] & (sink << shiftGuessSinkBy)
 }
 
 func (r *GameRoom) Loop() {
