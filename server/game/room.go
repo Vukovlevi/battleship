@@ -12,6 +12,8 @@ const (
 
 	winner byte = 0x40
 	loser byte = 0x00
+
+    waitingForShips = "waitingForShips"
 )
 
 type GameRoom struct {
@@ -20,6 +22,7 @@ type GameRoom struct {
 	player2     *Player
 	MessageChan chan tcp.TcpCommand
 	closeChan chan *GameRoom
+    state string
 }
 
 func (r *GameRoom) CloseRoom(command *tcp.TcpCommand) {
@@ -86,8 +89,15 @@ func (r *GameRoom) SendMatchFound() { //when a room is set up, send the correct 
 }
 
 func (r *GameRoom) HandleShipsReady(command tcp.TcpCommand) {
-    //TODO: create a state for the room, to know which command types to expect
     player, otherPlayer := r.GetPlayers(command)
+
+    if r.state != waitingForShips { //if we dont expect ships we send back an error
+        cmd := tcp.CommandTypeMismatchCommand
+        cmd.Connection = command.Connection
+        player.connection.Send(cmd.EncodeToBytes())
+        r.log.Debug("unexpected ships received", "player", player.username)
+        return
+    }
 
     if len(player.ships) != 0 { //if the player already has ships send error back
         cmd := tcp.DataMismatchCommand
@@ -106,18 +116,32 @@ func (r *GameRoom) HandleShipsReady(command tcp.TcpCommand) {
         return
     }
 
-    //inform the other player about current player readiness
-    cmd := tcp.TcpCommand{
-        Connection: otherPlayer.connection,
-        Type: tcp.CommandType.PlayerReady,
-        Data: make([]byte, 0),
+    if len(otherPlayer.ships) == 0 { //if he is the first one
+        //inform the other player about current player readiness
+        cmd := tcp.TcpCommand{
+            Connection: otherPlayer.connection,
+            Type: tcp.CommandType.PlayerReady,
+            Data: make([]byte, 0),
+        }
+        otherPlayer.connection.Send(cmd.EncodeToBytes())
+    } else { //if the player is the second one to send ships
+        r.state = otherPlayer.username //set the state to the other user's name, since he starts
+        cmd := tcp.TcpCommand{
+            Type: tcp.CommandType.MatchStart,
+            Data: []byte{1},
+            Connection: otherPlayer.connection,
+        }
+        otherPlayer.connection.Send(cmd.EncodeToBytes()) //infrom the players about the match starting
+        cmd.Connection = player.connection
+        cmd.Data = []byte{0}
+        player.connection.Send(cmd.EncodeToBytes())
     }
-    otherPlayer.connection.Send(cmd.EncodeToBytes())
 
     //TODO: the 30s countdown limit
 }
 
 func (r *GameRoom) Loop() {
+    r.state = waitingForShips
 	for {
 		command, ok := <- r.MessageChan
 		if !ok {

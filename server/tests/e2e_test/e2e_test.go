@@ -383,7 +383,18 @@ func TestEndToEnd(t *testing.T) {
     assert.Assert(n > 0, "message should be longer than 0 byte when testing ship parsing on conn2", "n", n)
     assert.Nil(err, "there should be no error on ship parsing on conn2", "err", err)
     cmdType = buf[tcp.MESSAGE_TYPE_OFFSET: tcp.MESSAGE_TYPE_OFFSET + tcp.MESSAGE_TYPE_SIZE][0]
-    assert.Assert(cmdType == tcp.CommandType.PlayerReady, "there should be a player ready command conn1", "got cmd type", cmdType)
+    data := buf[tcp.HEADER_OFFSET]
+    assert.Assert(cmdType == tcp.CommandType.MatchStart, "there should be a match start command conn1", "got cmd type", cmdType)
+    assert.Assert(data == 1, "player1 should be the starting one")
+
+    buf = make([]byte, 256)
+    n, err = conn2.Read(buf)
+    assert.Assert(n > 0, "message should be longer than 0 byte when testing ship parsing on conn2", "n", n)
+    assert.Nil(err, "there should be no error on ship parsing on conn2", "err", err)
+    cmdType = buf[tcp.MESSAGE_TYPE_OFFSET: tcp.MESSAGE_TYPE_OFFSET + tcp.MESSAGE_TYPE_SIZE][0]
+    data = buf[tcp.HEADER_OFFSET]
+    assert.Assert(cmdType == tcp.CommandType.MatchStart, "there should be a match start command conn2", "got cmd type", cmdType)
+    assert.Assert(data == 0, "player2 should not be the starting one")
 
 	//testing one player disconnecting
 	conn1.Close()
