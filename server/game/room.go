@@ -163,6 +163,13 @@ func (r *GameRoom) HandlePlayerGuess(command tcp.TcpCommand) {
     }
 
     spot := int(binary.BigEndian.Uint16(command.Data)) //get the spot the player has guessed
+    if err := validPositionBounds(spot, r.log); err != nil { //check if the spot is inbounds
+        tcpErr, ok := err.(tcp.TcpError)
+        assert.Assert(ok, "validating position on player guess should only return tcperror", "returned error", err)
+        player.connection.Send(tcpErr.Command.EncodeToBytes())
+        return
+    }
+
     if !player.CanGuessSpot(spot) { //if he cannot guess that spot return error
         cmd := tcp.TcpCommand{
             Type: tcp.CommandType.GuessConfirm,

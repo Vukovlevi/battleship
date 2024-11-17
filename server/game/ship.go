@@ -32,18 +32,26 @@ func parseSingleShip(data []byte, log *logger.Logger) (Ship, error) { //the data
 
     for i := 0; i < len(data); i += 2 {
         pos := binary.BigEndian.Uint16(data[i:i+2])
-        x := pos / 1000
-        y := pos % 1000
-        if x > 10 || y > 10 || x < 0 || y < 0 { //check the bounds of a single positions, return error if pos is out of bounds
-            log.Warning("coords at max should be 10 and at min 1", "x", x, "y", y)
-            cmd := tcp.DataMismatchCommand
-            err := tcp.CreateTcpError("coords at max should be 10 and at min 1", cmd)
+        if err := validPositionBounds(int(pos), log); err != nil {
             return Ship{}, err
         }
         ship.positions[int(pos)] = true
     }
 
     return ship, nil
+}
+
+func validPositionBounds(spot int, log *logger.Logger) error {
+    x := spot / 1000
+    y := spot % 1000
+    if x > 10 || y > 10 || x < 0 || y < 0 { //check the bounds of a single positions, return error if pos is out of bounds
+        log.Warning("coords at max should be 10 and at min 1", "x", x, "y", y)
+        cmd := tcp.DataMismatchCommand
+        err := tcp.CreateTcpError("coords at max should be 10 and at min 1", cmd)
+        return err
+    }
+
+    return nil
 }
 
 func checkValidShipPositions(ship Ship, log *logger.Logger) error {
