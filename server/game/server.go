@@ -87,6 +87,7 @@ func handleJoinRequest(g *GameServer, command tcp.TcpCommand) {
 		username: string(command.Data),
 		connection: command.Connection,
 		ships: make([]Ship, 0),
+        cannotGuessHereSpots: make(map[int]bool),
 	}
 
 	g.log.Info("player put into matchmaking", "player", player.username)

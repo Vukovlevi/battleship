@@ -408,6 +408,86 @@ func TestEndToEnd(t *testing.T) {
     data = buf[tcp.HEADER_OFFSET]
     assert.Assert(data == tcp.CommandTypeMismatchCommand.Data[0], "the mismatch type should be command type mismatch", "got mismatch type", data)
 
+    //testing spot sending from wrong connection
+    cmd = tcp.TcpCommand{
+        Type: tcp.CommandType.PlayerGuess,
+        Data: make([]byte, 2),
+    }
+    binary.BigEndian.PutUint16(cmd.Data, 1001)
+    conn2.Write(cmd.EncodeToBytes())
+    time.Sleep(time.Millisecond * 10)
+    buf = make([]byte, 256)
+    n, err = conn2.Read(buf)
+    assert.Assert(n > 0, "message should be longer than 0 byte when testing wrong player sending guess", "n", n)
+    assert.Nil(err, "there should be no error on testing wrong player sending guess", "err", err)
+    cmdType = buf[tcp.MESSAGE_TYPE_OFFSET: tcp.MESSAGE_TYPE_OFFSET + tcp.MESSAGE_TYPE_SIZE][0]
+    assert.Assert(cmdType == tcp.CommandType.GuessConfirm, "there should be guess confirm command when wrong player sends guess", "got cmd type", cmdType)
+    data = buf[tcp.HEADER_OFFSET]
+    assert.Assert((data >> 6) == 0, "wrong player guessing should return notYourTurn", "returned bytes", buf[:n])
+
+    //testing invalid spot sending
+    binary.BigEndian.PutUint16(cmd.Data, 1011)
+    log.Debug("cmd data on invalid spot testing", "data", cmd.Data)
+    conn1.Write(cmd.EncodeToBytes())
+    time.Sleep(time.Millisecond * 10)
+    buf = make([]byte, 256)
+    n, err = conn1.Read(buf)
+    assert.Assert(n > 0, "message should be longer than 0 byte when testing out of bound player guess", "n", n)
+    assert.Nil(err, "there should be no error on testing out of bounds player guess", "err", err)
+    cmdType = buf[tcp.MESSAGE_TYPE_OFFSET: tcp.MESSAGE_TYPE_OFFSET + tcp.MESSAGE_TYPE_SIZE][0]
+    assert.Assert(cmdType == tcp.CommandType.GuessConfirm, "there should be guess confirm command when guess is out of bounds", "got cmd type", cmdType)
+    data = buf[tcp.HEADER_OFFSET]
+    assert.Assert((data >> 6) == 1, "out of bounds guess should return invalidSpot", "returned bytes", buf[:n])
+
+    //testing miss
+    binary.BigEndian.PutUint16(cmd.Data, 10001)
+    conn1.Write(cmd.EncodeToBytes())
+    time.Sleep(time.Millisecond * 10)
+    buf = make([]byte, 256)
+    n, err = conn1.Read(buf)
+    assert.Assert(n > 0, "message should be longer than 0 byte when testing miss guess", "n", n)
+    assert.Nil(err, "there should be no error on testing miss guess", "err", err)
+    cmdType = buf[tcp.MESSAGE_TYPE_OFFSET: tcp.MESSAGE_TYPE_OFFSET + tcp.MESSAGE_TYPE_SIZE][0]
+    assert.Assert(cmdType == tcp.CommandType.GuessConfirm, "there should be guess confirm command when guess is missed", "got cmd type", cmdType)
+    data = buf[tcp.HEADER_OFFSET]
+    assert.Assert((data >> 6) == 2, "missed guess should return miss", "returned bytes", buf[:n])
+
+    //the other connection should receive the guess as well for displaying reasons
+    buf = make([]byte, 256)
+    n, err = conn2.Read(buf)
+    assert.Assert(n > 0, "message should be longer than 0 byte when testing miss guess on the other user", "n", n)
+    assert.Nil(err, "there should be no error on testing miss guess on the other user", "err", err)
+    cmdType = buf[tcp.MESSAGE_TYPE_OFFSET: tcp.MESSAGE_TYPE_OFFSET + tcp.MESSAGE_TYPE_SIZE][0]
+    assert.Assert(cmdType == tcp.CommandType.PlayerGuess, "there should be player guess command when guess is missed on by the other user", "got cmd type", cmdType)
+    spot := binary.BigEndian.Uint16(buf[tcp.HEADER_OFFSET:n])
+    assert.Assert(binary.BigEndian.Uint16(cmd.Data) == spot, "the other players should receive the exact same spot", "returned bytes", buf[:n])
+    time.Sleep(time.Millisecond * 10)
+
+    //testing hit
+    binary.BigEndian.PutUint16(cmd.Data, 10010)
+    conn2.Write(cmd.EncodeToBytes())
+    time.Sleep(time.Millisecond * 10)
+    buf = make([]byte, 256)
+    n, err = conn2.Read(buf)
+    assert.Assert(n > 0, "message should be longer than 0 byte when testing hit guess", "n", n)
+    assert.Nil(err, "there should be no error on testing hit guess", "err", err)
+    cmdType = buf[tcp.MESSAGE_TYPE_OFFSET: tcp.MESSAGE_TYPE_OFFSET + tcp.MESSAGE_TYPE_SIZE][0]
+    assert.Assert(cmdType == tcp.CommandType.GuessConfirm, "there should be guess confirm command when guess is hit", "got cmd type", cmdType)
+    data = buf[tcp.HEADER_OFFSET]
+    assert.Assert((data >> 6) == 3, "missed guess should return hit", "returned bytes", buf[:n])
+
+    //the other connection should receive the guess as well for displaying reasons
+    time.Sleep(time.Millisecond * 10)
+    buf = make([]byte, 256)
+    n, err = conn1.Read(buf)
+    assert.Assert(n > 0, "message should be longer than 0 byte when testing miss guess on the other user", "n", n)
+    assert.Nil(err, "there should be no error on testing miss guess on the other user", "err", err)
+    cmdType = buf[tcp.MESSAGE_TYPE_OFFSET: tcp.MESSAGE_TYPE_OFFSET + tcp.MESSAGE_TYPE_SIZE][0]
+    assert.Assert(cmdType == tcp.CommandType.PlayerGuess, "there should be player guess command when guess is missed on by the other user", "got cmd type", cmdType)
+    spot = binary.BigEndian.Uint16(buf[tcp.HEADER_OFFSET:n])
+    assert.Assert(binary.BigEndian.Uint16(cmd.Data) == spot, "the other players should receive the exact same spot", "returned bytes", buf[:n])
+    time.Sleep(time.Millisecond * 10)
+
 	//testing one player disconnecting
 	conn1.Close()
 	buf = make([]byte, 256)
