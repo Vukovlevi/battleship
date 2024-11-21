@@ -15,7 +15,7 @@ func main() {
     flag.BoolVar(&debugMode, "debug", false, "if set to true, the debug statements will appear, otherwise not")
     flag.Parse()
 
-    log := logger.CreateLogger(os.Stdout, os.Stdout, os.Stderr, debugMode)
+    log := logger.CreateLogger(os.Stdout, os.Stdout, debugMode)
     assert.SetLogger(&log)
     /*
     log.Info("lajos", "num", 5, "id", 76)

@@ -76,13 +76,13 @@ func TestTcpServer(t *testing.T) {
 	name := []byte("vukovlevi")
 	shouldbe1 := make([]byte, tcp.HEADER_OFFSET)
 	shouldbe1[tcp.VERSION_OFFSET] = tcp.VERSION
-	shouldbe1[tcp.MESSAGE_TYPE_OFFSET] = tcp.CommandType.JoinRequest 
+	shouldbe1[tcp.MESSAGE_TYPE_OFFSET] = tcp.CommandType.JoinRequest
 	binary.BigEndian.PutUint16(shouldbe1[tcp.DATA_LENGTH_OFFSET:], uint16(len(name)))
 	shouldbe1 = append(shouldbe1, name...)
 
 	shouldbe2 := make([]byte, tcp.HEADER_OFFSET)
-	shouldbe2[tcp.VERSION_OFFSET] = tcp.VERSION 
-	shouldbe2[tcp.MESSAGE_TYPE_OFFSET] = tcp.CommandType.DuplicateUsername 
+	shouldbe2[tcp.VERSION_OFFSET] = tcp.VERSION
+	shouldbe2[tcp.MESSAGE_TYPE_OFFSET] = tcp.CommandType.DuplicateUsername
 	binary.BigEndian.PutUint16(shouldbe2[tcp.DATA_LENGTH_OFFSET:], uint16(0))
 	messageChan := make(chan tcp.TcpCommand)
 
@@ -104,7 +104,7 @@ func TestTcpServer(t *testing.T) {
 			for i := range command.Data {
 				assert.Assert(shouldbes[msgCount][tcp.HEADER_OFFSET + i] == command.Data[i], "all the bytes should be equal", "expected", shouldbes[msgCount][tcp.HEADER_OFFSET + i], "got", command.Data[i], "array", msgCount + 1)
 			}
-			
+
 			msgCount++
 			wg.Done()
 
@@ -121,7 +121,7 @@ func TestTcpServer(t *testing.T) {
 	defer outFile.Close()
 	outFile.Write([]byte("--- NEW TEST ---\n"))
 
-	log := logger.CreateLogger(outFile, outFile, outFile, true)
+	log := logger.CreateLogger(outFile, outFile, true)
 	assert.SetLogger(&log)
 
 	testServer := tcp.NewTcpServer(PORT, &log)

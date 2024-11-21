@@ -30,14 +30,29 @@ type Logger struct {
     errorWriter io.Writer
     debugWriter io.Writer
     color colorEnum
-    debugMode bool
 }
 
-func CreateLogger(w, d, e io.Writer, debugMode bool) Logger {
+func createDebugFile() io.Writer {
+	outFile, err := os.Create("debug.txt")
+	if err != nil {
+		panic("debug file could not be deleted")
+	}
+	outFile.Write([]byte("--- NEW TEST ---\n"))
+
+	return outFile
+}
+
+func CreateLogger(w, e io.Writer, debugMode bool) Logger {
+    var debugWriter io.Writer
+    if debugMode {
+        debugWriter = w
+    } else {
+        debugWriter = createDebugFile()
+    }
     return Logger{
         writer: w,
         errorWriter: e,
-        debugWriter: d,
+        debugWriter: debugWriter,
         color: colorEnum{
             blue: blue,
             yellow: yellow,
@@ -45,7 +60,6 @@ func CreateLogger(w, d, e io.Writer, debugMode bool) Logger {
             cyan: cyan,
             escapeColor: escapeColor,
         },
-        debugMode: debugMode,
     }
 }
 
@@ -78,10 +92,6 @@ func (l *Logger) Info(msg string, data ...any) {
 }
 
 func (l *Logger) Debug(msg string, data ...any) {
-    if !l.debugMode {
-        return
-    }
-
     str, err := createMsg(msg, data)
     if err != nil {
         return

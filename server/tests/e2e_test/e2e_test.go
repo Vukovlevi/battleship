@@ -26,7 +26,7 @@ func createLogger() (io.WriteCloser, logger.Logger) {
 	}
 	outFile.Write([]byte("--- NEW TEST ---\n"))
 
-	return outFile, logger.CreateLogger(outFile, outFile, outFile, true)
+	return outFile, logger.CreateLogger(outFile, outFile, true)
 }
 
 func createTcpConnection() net.Conn {

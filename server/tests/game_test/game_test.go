@@ -20,7 +20,7 @@ func TestConnectingToGameServer(t *testing.T) {
 	defer outFile.Close()
 	outFile.Write([]byte("--- NEW TEST ---\n"))
 
-	log := logger.CreateLogger(outFile, outFile, outFile, true)
+	log := logger.CreateLogger(outFile, outFile, true)
 	assert.SetLogger(&log)
 
 	testGameServer := game.NewGameServer(&log)
