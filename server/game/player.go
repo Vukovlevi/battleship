@@ -39,7 +39,7 @@ func (p *Player) CanGuessSpot(spot int) bool {
     return !ok
 }
 
-func (p *Player) IsHit(spot int) (bool, byte) {
+func (p *Player) IsHit(spot int) (bool, byte) { //returns if the spot is a hit and wether the hit sink the ship
     for _, ship := range p.ships {
         if _, ok := ship.positions[spot]; ok {
             ship.health--
@@ -51,6 +51,20 @@ func (p *Player) IsHit(spot int) (bool, byte) {
         }
     }
     return false, 0
+}
+
+func (p *Player) RemainingHealth() (byte, byte) { //returns the remaining ships and the remaining health of the player
+    var remainingShips byte = 0
+    var remainingHealth byte = 0
+
+    for _, ship := range p.ships {
+        remainingHealth += byte(ship.health)
+        if ship.health != 0 {
+            remainingShips++
+        }
+    }
+
+    return remainingShips, remainingHealth
 }
 
 func (p *Player) SetShips(data []byte, log *logger.Logger) error { //the data is the entire received data with all the ships info
