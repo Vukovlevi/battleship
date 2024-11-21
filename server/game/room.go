@@ -12,8 +12,8 @@ const (
 	correctlyClosed byte = 0x00
 	playerLeftClosed byte = 0x80
 
-	winner byte = 0x40
-	loser byte = 0x00
+	winner byte = 0x00
+	loser byte = 0x40
 
     waitingForShips = "waitingForShips"
 
@@ -45,7 +45,7 @@ func (r *GameRoom) CloseRoom(command *tcp.TcpCommand) {
 	r.closeChan <- r //inform the game server about this room being closed
 }
 
-func (r *GameRoom) GetStatsByte(closer *Player, sendingTo *Player) []byte { //set closer to nil if the room is closed because of win
+func (r *GameRoom) GetStatsByte(closer, sendingTo, otherPlayer *Player) []byte { //set closer to nil if the room is closed because of win, otherPlayer is only set if the game is over by win, otherwise nil
 	if closer != nil { //this means the game is not over correctly, a player has closed the connection
 		assert.Assert(closer != sendingTo, "sending stats to the player closing the connection is not possible", "closer", closer.username, "sendintTo", sendingTo.username)
 
@@ -55,13 +55,15 @@ func (r *GameRoom) GetStatsByte(closer *Player, sendingTo *Player) []byte { //se
 
     //the game is closed because of someone has won
     firstByte := correctlyClosed //setting bytes according to protocol spec
-    remainingShips, remainingHealth := sendingTo.RemainingHealth()
-    if remainingShips == 0 {
+    remainingShipsOfThisPlayer, _ := sendingTo.RemainingHealth()
+    if remainingShipsOfThisPlayer == 0 { //setting winner/loser according to protocol spec
         firstByte = firstByte | loser
     } else {
         firstByte = firstByte | winner
     }
-    firstByte = firstByte | (remainingShips << 3)
+
+    remainingShipsOfOtherPlayer, remainingHealth := otherPlayer.RemainingHealth() //getting the enemies stats back
+    firstByte = firstByte | (remainingShipsOfOtherPlayer << 3)
 
 	return []byte{firstByte, remainingHealth}
 }
@@ -86,7 +88,7 @@ func (r *GameRoom) HandleConnectionClosed(command *tcp.TcpCommand) *tcp.TcpComma
 	cmd := tcp.TcpCommand{
 		Connection: sendTo.connection,
 		Type: tcp.CommandType.GameOver,
-		Data: r.GetStatsByte(closer, sendTo),
+		Data: r.GetStatsByte(closer, sendTo, nil),
 	}
 
 	r.log.Debug("got statistics for other user", "stat", cmd.Data)
@@ -193,11 +195,18 @@ func (r *GameRoom) HandlePlayerGuess(command tcp.TcpCommand) {
         return
     }
 
-    //send player guess to other player for displaying reasons
+    hit, sink := otherPlayer.IsHit(spot) //test the hit
+    remainingShips, _ := otherPlayer.RemainingHealth() //check for a winner, if there is one, handle gameover event instead of guess confirm and player guess to the other player
+    r.log.Debug("handling player guess", "player", player.username, "spot", spot, "isHit", hit, "didSink", sink, "enemy remaining ships", remainingShips)
+    if remainingShips == 0 {
+        r.HandleGameOver(player, otherPlayer)
+        return
+    }
+
+    //send player guess to other player for displaying reasons if there is no game over
     otherPlayer.connection.Send(command.EncodeToBytes())
 
-    //calculate guess confirm for player
-    hit, sink := otherPlayer.IsHit(spot)
+    //calculate guess confirm for player if there is no game over
     cmd := tcp.TcpCommand{
         Type: tcp.CommandType.GuessConfirm,
         Connection: player.connection,
@@ -217,15 +226,10 @@ func (r *GameRoom) HandlePlayerGuess(command tcp.TcpCommand) {
 
     player.cannotGuessHereSpots[spot] = true //mark spot as unguessable
     r.state = otherPlayer.username //set the state for the other user's turn
-
-    remainingShips, _ := otherPlayer.RemainingHealth() //check for a winner, if there is one, handle gameover event
-    if remainingShips == 0 {
-        r.HandleGameOver(player, otherPlayer)
-    }
 }
 
 func (r *GameRoom) HandleGameOver(winner *Player, loser *Player) {
-    data := r.GetStatsByte(nil, winner) //get stats for the winner (nil indicating that the game is over because of a win)
+    data := r.GetStatsByte(nil, winner, loser) //get stats for the winner (nil indicating that the game is over because of a win)
     cmd := tcp.TcpCommand{
         Connection: winner.connection,
         Type: tcp.CommandType.GameOver,
@@ -233,10 +237,13 @@ func (r *GameRoom) HandleGameOver(winner *Player, loser *Player) {
     }
     winner.connection.Send(cmd.EncodeToBytes())
 
-    data = r.GetStatsByte(nil, loser) //get stats for the loser (nil indicating that the game is over because of a win)
+    data = r.GetStatsByte(nil, loser, winner) //get stats for the loser (nil indicating that the game is over because of a win)
     cmd.Connection = loser.connection
     cmd.Data = data
     loser.connection.Send(cmd.EncodeToBytes())
+
+    winner.connection.GameOver = true
+    loser.connection.GameOver = true
 }
 
 func (r *GameRoom) Loop() {

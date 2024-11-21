@@ -1,6 +1,9 @@
 package game
 
 import (
+	"io"
+	"os"
+
 	"github.com/vukovlevi/battleship/server/assert"
 	"github.com/vukovlevi/battleship/server/logger"
 	"github.com/vukovlevi/battleship/server/tcp"
@@ -15,6 +18,7 @@ type Player struct {
 	connection *tcp.Connection
 	ships []Ship
     cannotGuessHereSpots map[int]bool
+    temporaryFile io.WriteCloser
 }
 
 func getAllShipMap() map[int]int { //returns a map where key is the length of the ship and value is how many ships should with that length
@@ -40,11 +44,21 @@ func (p *Player) CanGuessSpot(spot int) bool {
 }
 
 func (p *Player) IsHit(spot int) (bool, byte) { //returns if the spot is a hit and wether the hit sink the ship
-    for _, ship := range p.ships {
-        if _, ok := ship.positions[spot]; ok {
-            ship.health--
+    for i, _ := range p.ships {
+        if _, ok := p.ships[i].positions[spot]; ok {
+            p.ships[i].health--
             var sink byte = 0
-            if ship.health == 0 {
+
+            //i keep it here just in case i need to debug this again
+            /*
+            p.temporaryFile.Write([]byte(fmt.Sprintf("spot: %d, ship: %+v\nships: %+v\n", spot, p.ships[i], p.ships)))
+            if spot == 10010 {
+                p.temporaryFile.Close()
+            }
+            */
+            //end of debugging code
+
+            if p.ships[i].health == 0 {
                 sink = 1
             }
             return true, sink
@@ -57,9 +71,9 @@ func (p *Player) RemainingHealth() (byte, byte) { //returns the remaining ships 
     var remainingShips byte = 0
     var remainingHealth byte = 0
 
-    for _, ship := range p.ships {
-        remainingHealth += byte(ship.health)
-        if ship.health != 0 {
+    for i, _ := range p.ships {
+        remainingHealth += byte(p.ships[i].health)
+        if p.ships[i].health != 0 {
             remainingShips++
         }
     }
@@ -114,6 +128,7 @@ func (p *Player) SetShips(data []byte, log *logger.Logger) error { //the data is
 
     assert.Assert(len(shipMap) == 0, "every ship len should be deleted with it's count from shipmap if there is no error", "remaining map", shipMap)
 
+    p.temporaryFile, _ = os.Create("dikaz") //DELETE THIS AFTER TEST IS GOOD
     p.ships = ships
     log.Debug("players ships", "player", p.username, "ships", p.ships)
     return nil

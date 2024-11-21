@@ -88,7 +88,7 @@ func readConnection(server *Server, connection Connection) {
             }
         }
 
-        server.log.Debug("got message", "connId", connection.Id, "msg", command)
+        //server.log.Debug("got message", "connId", connection.Id, "msg", command)
         if command != nil {
             connection.SendToChan <- *command //if there is a command, send it to the gameserver or the room
         }
