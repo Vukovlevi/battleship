@@ -1,9 +1,6 @@
 package game
 
 import (
-	"io"
-	"os"
-
 	"github.com/vukovlevi/battleship/server/assert"
 	"github.com/vukovlevi/battleship/server/logger"
 	"github.com/vukovlevi/battleship/server/tcp"
@@ -18,7 +15,7 @@ type Player struct {
 	connection *tcp.Connection
 	ships []Ship
     cannotGuessHereSpots map[int]bool
-    temporaryFile io.WriteCloser
+    //temporaryFile io.WriteCloser //uncomment in case of debugging
 }
 
 func getAllShipMap() map[int]int { //returns a map where key is the length of the ship and value is how many ships should with that length
@@ -128,7 +125,7 @@ func (p *Player) SetShips(data []byte, log *logger.Logger) error { //the data is
 
     assert.Assert(len(shipMap) == 0, "every ship len should be deleted with it's count from shipmap if there is no error", "remaining map", shipMap)
 
-    p.temporaryFile, _ = os.Create("dikaz") //DELETE THIS AFTER TEST IS GOOD
+    //p.temporaryFile, _ = os.Create("dikaz") //DELETE THIS AFTER TEST IS GOOD
     p.ships = ships
     log.Debug("players ships", "player", p.username, "ships", p.ships)
     return nil
