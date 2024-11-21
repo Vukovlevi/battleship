@@ -135,7 +135,7 @@ func TestGame(t *testing.T) {
 
         //testing conn1 guessing
         conn1.Write(cmd.EncodeToBytes())
-        time.Sleep(time.Millisecond * 10)
+        time.Sleep(time.Millisecond * 50)
         n2, err2 := conn2.Read(buf2)
 
         n1, err1 := conn1.Read(buf1)
@@ -150,7 +150,7 @@ func TestGame(t *testing.T) {
 
         //testing conn2 guessing
         conn2.Write(cmd.EncodeToBytes())
-        time.Sleep(time.Millisecond * 10)
+        time.Sleep(time.Millisecond * 50)
         n1, err1 = conn1.Read(buf1)
 
         n2, err2 = conn2.Read(buf2)
