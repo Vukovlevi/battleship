@@ -6,9 +6,18 @@
         xmlns:local="clr-namespace:Client"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
-    <Grid>
-        <Button Content="Connect" HorizontalAlignment="Left" Margin="48,197,0,0" VerticalAlignment="Top" RenderTransformOrigin="-5.425,0.392" Click="TestConnect"/>
-        <Button Content="TestMessageBox" HorizontalAlignment="Left" Margin="138,197,0,0" VerticalAlignment="Top" Click="TestMessageBox"/>
+    <Grid Background="#FF333333">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="2*"></RowDefinition>
+        </Grid.RowDefinitions>
 
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition></ColumnDefinition>
+            <ColumnDefinition></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+
+        <Label x:Name="usernameLabel" Content="Felhasználónév:" Foreground="White" FontFamily="Arial" FontSize="20" Margin="234,200,0,182" HorizontalAlignment="Left"/>
+        <TextBox x:Name="usernameInput" TextWrapping="Wrap" Foreground="White" FontFamily="Arial" FontSize="20" Width="212" Background="#FF8C8B8B" Grid.Column="1" Margin="10,199,178,182" KeyDown="UsernameInputKeydown"/>
+        <Button x:Name="usernameSetButton" Content="Meccskeresés indítása" HorizontalAlignment="Left" Margin="284,277,0,0" VerticalAlignment="Top" Grid.ColumnSpan="2" Width="232" FontFamily="Arial" FontSize="20" Click="StartMatchmakingButton"/>
     </Grid>
 </Window>

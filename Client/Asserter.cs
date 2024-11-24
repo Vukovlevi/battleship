@@ -9,9 +9,15 @@ using System.Windows;
 
 namespace Client
 {
-    internal class Asserter
+    internal static class Asserter
     {
+        static Tcp tcp;
         static string debugFile = "debug.txt";
+
+        public static void SetTcp(Tcp tcp)
+        {
+            Asserter.tcp = tcp;
+        }
 
         public static void SetDebugFile(string debugFile)
         {
@@ -48,6 +54,7 @@ namespace Client
             writer.WriteLine(message);
             writer.Close();
             MessageBox.Show("An error occured, the program is goint to close!");
+            tcp.Close();
             Environment.Exit(1);
         }
     }

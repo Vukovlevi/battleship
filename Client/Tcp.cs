@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Net;
 using System.Net.Sockets;
 using System.Data;
+using System.Threading;
 
 namespace Client
 {
@@ -86,7 +87,6 @@ namespace Client
 
         public void Listen()
         {
-            //TODO(maybe): make it to a new thread
             listen = true;
             try
             {
@@ -94,10 +94,16 @@ namespace Client
                 byte[] buffer = new byte[1024];
                 while (listen)
                 {
-                    int n = stream.Read(buffer, 0, buffer.Length);
-                    Asserter.Assert(n <= buffer.Length, $"there should never be a message that reaches {buffer.Length} bytes", "read bytes", n.ToString());
+                    if (stream.DataAvailable)
+                    {
+                        int n = stream.Read(buffer, 0, buffer.Length);
+                        Asserter.Assert(n <= buffer.Length, $"there should never be a message that reaches {buffer.Length} bytes", "read bytes", n.ToString());
 
-                    HandleTcpCommand(buffer.Take(n).ToArray());
+                        HandleTcpCommand(buffer.Take(n).ToArray());
+                    } else
+                    {
+                        Thread.Sleep(1);
+                    }
                 }
             }
             catch (Exception ex)
@@ -136,6 +142,8 @@ namespace Client
 
             byte type = data.Skip(MESSAGE_TYPE_OFFSET).Take(MESSAGE_TYPE_SIZE).ToArray()[0];
             TcpCommand command = new TcpCommand(type, data.Skip(HEADER_OFFSET).ToArray());
+
+            GameState.HandleCommand(command);
         }
     }
 }
