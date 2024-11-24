@@ -7,6 +7,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Data;
 using System.Threading;
+using System.Windows;
 
 namespace Client
 {
@@ -94,9 +95,9 @@ namespace Client
                 byte[] buffer = new byte[1024];
                 while (listen)
                 {
-                    if (stream.DataAvailable)
+                    if (stream.DataAvailable && listen)
                     {
-                        int n = stream.Read(buffer, 0, buffer.Length);
+                    int n = stream.Read(buffer, 0, buffer.Length);
                         Asserter.Assert(n <= buffer.Length, $"there should never be a message that reaches {buffer.Length} bytes", "read bytes", n.ToString());
 
                         HandleTcpCommand(buffer.Take(n).ToArray());

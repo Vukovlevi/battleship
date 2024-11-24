@@ -23,7 +23,10 @@ namespace Client
     public partial class MainWindow : Window
     {
         Tcp tcp;
-        public static string username;
+        public SetUsernamePage setUsernamePage;
+        public GamePage gamePage;
+        Thread listeningThread;
+        
         public MainWindow()
         {
             InitializeComponent();
@@ -38,57 +41,23 @@ namespace Client
         }
 
 
-        void StartGame()
+        public void StartGame()
         {
             tcp = new Tcp();
             Asserter.SetTcp(tcp);
+            GameState.SetTcp(tcp);
             tcp.Connect();
-            Thread listeningThread = new Thread(tcp.Listen);
+            listeningThread = new Thread(tcp.Listen);
+            listeningThread.SetApartmentState(ApartmentState.STA);
             listeningThread.Start();
             GameState.state = State.SetUsername;
-        }
 
-        private void UsernameInputKeydown(object sender, KeyEventArgs e)
-        {
-            if (e.Key != Key.Enter) return;
-            StartMatchMaking();
-        }
+            setUsernamePage = new SetUsernamePage();
+            setUsernamePage.SetTcp(tcp);
+            Frame.Content = setUsernamePage;
 
-        private void StartMatchmakingButton(object sender, RoutedEventArgs e)
-        {
-            StartMatchMaking();
-        }
-
-        void StartMatchMaking()
-        {
-            username = usernameInput.Text;
-
-            if (username.Length == 0)
-            {
-                MessageBox.Show("Állítson be felhasználónevet!");
-                return;
-            }
-
-            HideSetUsername();
-
-            TcpCommand command = new TcpCommand(Convert.ToByte(CommandType.JoinRequest), ASCIIEncoding.ASCII.GetBytes(username));
-            tcp.Send(command.EncodeToBytes());
-        }
-
-        public void HideSetUsername()
-        {
-            GameState.state = State.WaitingForMatch;
-            usernameLabel.Visibility = Visibility.Hidden;
-            usernameInput.Visibility = Visibility.Hidden;
-            usernameSetButton.Visibility = Visibility.Hidden;
-        }
-
-        public void ShowSetUsername()
-        {
-            GameState.state = State.SetUsername;
-            usernameLabel.Visibility = Visibility.Visible;
-            usernameInput.Visibility = Visibility.Visible;
-            usernameSetButton.Visibility = Visibility.Visible;
+            gamePage = new GamePage();
+            gamePage.SetTcp(tcp);
         }
     }
 }
