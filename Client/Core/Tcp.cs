@@ -9,7 +9,7 @@ using System.Data;
 using System.Threading;
 using System.Windows;
 
-namespace Client
+namespace Client.Core
 {
     internal class Tcp
     {
@@ -30,7 +30,7 @@ namespace Client
         TcpClient? client = null;
         bool listen = false;
 
-        public Tcp(string address = "127.0.0.1", int port = 42069) 
+        public Tcp(string address = "127.0.0.1", int port = 42069)
         {
             Asserter.Assert(client == null, "tcp client should be only initialized once");
 
@@ -80,7 +80,8 @@ namespace Client
             {
                 var stream = GetNetworkStream();
                 stream.Write(data, 0, data.Length);
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 Asserter.Assert(false, "an error occured while sending tcpcommand", "err", ex.Message);
             }
@@ -97,11 +98,12 @@ namespace Client
                 {
                     if (stream.DataAvailable && listen)
                     {
-                    int n = stream.Read(buffer, 0, buffer.Length);
+                        int n = stream.Read(buffer, 0, buffer.Length);
                         Asserter.Assert(n <= buffer.Length, $"there should never be a message that reaches {buffer.Length} bytes", "read bytes", n.ToString());
 
                         HandleTcpCommand(buffer.Take(n).ToArray());
-                    } else
+                    }
+                    else
                     {
                         Thread.Sleep(1);
                     }
@@ -121,7 +123,7 @@ namespace Client
         public static int GetUint16(byte[] data)
         {
             Asserter.Assert(data.Length >= 2, "getting a uint16 from this array is impossible because of its length", "length", data.Length.ToString());
-            return (data[0] << 8) | data[1];
+            return data[0] << 8 | data[1];
         }
 
         public static void PutUint16(byte[] data, int value)

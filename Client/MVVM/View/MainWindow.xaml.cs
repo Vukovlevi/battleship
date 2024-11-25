@@ -14,6 +14,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Client.Core;
 
 namespace Client
 {
@@ -54,7 +55,7 @@ namespace Client
 
             setUsernamePage = new SetUsernamePage();
             setUsernamePage.SetTcp(tcp);
-            Frame.Content = setUsernamePage;
+            //Frame.Content = setUsernamePage;
 
             gamePage = new GamePage();
             gamePage.SetTcp(tcp);

@@ -1,0 +1,36 @@
+﻿<UserControl x:Class="Client.MVVM.View.Login"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Client.MVVM.View"
+             xmlns:vms="clr-namespace:Client.MVVM.ViewModel"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800"
+             Background="Transparent">
+    <UserControl.DataContext>
+        <vms:LoginViewModel/>
+    </UserControl.DataContext>
+    
+    <StackPanel VerticalAlignment="Center"
+                HorizontalAlignment="Center">
+
+        <TextBlock Text="Torpedó"
+                   FontSize="50"
+                   Foreground="White"
+                   FontFamily="Arial"
+                   FontWeight="Bold"
+                   HorizontalAlignment="Center"/>
+
+        <TextBlock Text="Add meg a felhasználóneved"
+                   Foreground="#bbbbbb"
+                   HorizontalAlignment="Center"
+                   FontFamily="Arial"
+                   FontSize="20"/>
+
+        <TextBox Style="{StaticResource Input}"/>
+
+        <Button Content="Meccskeresés indítása" Style="{StaticResource Button}"
+                Command="{Binding SetUsername}"/>
+    </StackPanel>
+</UserControl>

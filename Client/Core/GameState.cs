@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 
-namespace Client
+namespace Client.Core
 {
     enum State
     {
@@ -63,10 +63,10 @@ namespace Client
         {
             Asserter.Assert(state == State.WaitingForMatch, "state should be waiting for match when receiving match found command", "state", state.ToString());
 
-            window.gamePage.SetUsernames(SetUsernamePage.username, ASCIIEncoding.ASCII.GetString(command.data));
+            window.gamePage.SetUsernames(SetUsernamePage.username, Encoding.ASCII.GetString(command.data));
             window.Dispatcher.Invoke(() =>
             {
-                window.Frame.Content = window.gamePage;
+                //window.Frame.Content = window.gamePage;
             });
         }
 

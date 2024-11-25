@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 
-namespace Client
+namespace Client.Core
 {
     enum CommandType
     {
@@ -40,37 +40,37 @@ namespace Client
         {
             switch (commandType)
             {
-                case (byte)1:
+                case 1:
                     this.commandType = CommandType.JoinRequest;
                     break;
-                case (byte)2:
+                case 2:
                     this.commandType = CommandType.DuplicateUsername;
                     break;
-                case (byte)3:
+                case 3:
                     this.commandType = CommandType.MatchFound;
                     break;
-                case (byte)4:
+                case 4:
                     this.commandType = CommandType.ShipsReady;
                     break;
-                case (byte)5:
+                case 5:
                     this.commandType = CommandType.PlayerReady;
                     break;
-                case (byte)6:
+                case 6:
                     this.commandType = CommandType.MatchStart;
                     break;
-                case (byte)7:
+                case 7:
                     this.commandType = CommandType.PlayerGuess;
                     break;
-                case (byte)8:
+                case 8:
                     this.commandType = CommandType.GuessConfirm;
                     break;
-                case (byte)9:
+                case 9:
                     this.commandType = CommandType.GameOver;
                     break;
-                case (byte)10:
+                case 10:
                     this.commandType = CommandType.CloseEvent;
                     break;
-                case (byte)11:
+                case 11:
                     this.commandType = CommandType.Mismatch;
                     break;
                 default:
