@@ -86,6 +86,12 @@ namespace Client.Core
             this.data = data;
         }
 
+        public TcpCommand(CommandType commandType, byte[] data)
+        {
+            this.commandType = commandType;
+            this.data = data;
+        }
+
         public byte[] EncodeToBytes()
         {
             byte[] bytes = new byte[Tcp.VERSION_SIZE + Tcp.MESSAGE_TYPE_SIZE];

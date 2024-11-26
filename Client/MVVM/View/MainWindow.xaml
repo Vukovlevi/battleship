@@ -8,12 +8,58 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800"
         WindowStyle="None"
-        AllowsTransparency="True">
+        AllowsTransparency="True"
+        ResizeMode="CanResize">
     <Window.DataContext>
         <viewModel:MainViewModel/>
     </Window.DataContext>
 
     <Grid Background="#121212">
-        <ContentPresenter Content="{Binding CurrentView}"/>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="50" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+
+            <Grid.InputBindings>
+                <MouseBinding MouseAction="LeftClick"
+                              Command="{Binding MoveWindowCommand}"/>
+                <MouseBinding MouseAction="LeftDoubleClick"
+                              Command="{Binding MaximizeCommand}"/>
+            </Grid.InputBindings>
+
+            <TextBlock Text="Torpedó"
+                       FontFamily="Arial"
+                       FontSize="30"
+                       FontWeight="Bold"
+                       Foreground="LightGray"
+                       Margin="10,0,0,0"
+                       VerticalAlignment="Center"/>
+            <StackPanel Grid.Column="1"
+                        VerticalAlignment="Center"
+                        HorizontalAlignment="Right"
+                        Orientation="Horizontal"
+                        Margin="0,0,10,0">
+
+                <Button Content="🗕"
+                        Style="{StaticResource WindowControlButton}"
+                        Command="{Binding MinimizeCommand}"/>
+                <Button Content="🗖"
+                        Padding="0,0,0,5"
+                        Style="{StaticResource WindowControlButton}"
+                        Command="{Binding MaximizeCommand}"/>
+                <Button Content="✕"
+                        Style="{StaticResource WindowControlButton}"
+                        Command="{Binding CloseCommand}"/>
+
+            </StackPanel>
+        </Grid>
+
+        <ContentPresenter Content="{Binding CurrentView}" Grid.Row="1"/>
     </Grid>
 </Window>

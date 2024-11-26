@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Client.MVVM.Model;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -14,9 +15,9 @@ namespace Client.Core
         static Tcp tcp;
         static string debugFile = "debug.txt";
 
-        public static void SetTcp(Tcp tcp)
+        public static void SetTcp()
         {
-            Asserter.tcp = tcp;
+            tcp = GlobalData.Instance.Tcp;
         }
 
         public static void SetDebugFile(string debugFile)

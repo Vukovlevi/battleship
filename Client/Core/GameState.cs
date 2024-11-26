@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Client.MVVM.Model;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -28,9 +29,9 @@ namespace Client.Core
             GameState.window = window;
         }
 
-        public static void SetTcp(Tcp tcp)
+        public static void SetTcp()
         {
-            GameState.tcp = tcp;
+            tcp = GlobalData.Instance.Tcp;
         }
 
         public static void HandleCommand(TcpCommand command)
@@ -56,28 +57,20 @@ namespace Client.Core
         {
             Asserter.Assert(state == State.WaitingForMatch, "getting duplicate username should only occur during waitingForMatch state", "got state", state.ToString());
 
-            MessageBox.Show($"A {SetUsernamePage.username} felhasználónév már foglalt.\nKérem válasszon másikat!");
+            GlobalData.Instance.LoginVM.DuplicateUsername();
         }
 
         static void HandleMatchFound(TcpCommand command)
         {
             Asserter.Assert(state == State.WaitingForMatch, "state should be waiting for match when receiving match found command", "state", state.ToString());
 
-            window.gamePage.SetUsernames(SetUsernamePage.username, Encoding.ASCII.GetString(command.data));
-            window.Dispatcher.Invoke(() =>
-            {
-                //window.Frame.Content = window.gamePage;
-            });
+            GlobalData.Instance.GameBoardVM.SetUsernames(GlobalData.Instance.Username, ASCIIEncoding.ASCII.GetString(command.data));
         }
 
         static void HandleGameOver(TcpCommand command)
         {
             MessageBox.Show("TODO: change this -- GAME OVER");
-            window.Dispatcher.Invoke(() =>
-            {
-                tcp.Close();
-                window.StartGame();
-            });
+            GlobalData.Instance.MainVM.RestartGame();
         }
     }
 }

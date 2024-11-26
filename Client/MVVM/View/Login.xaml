@@ -32,5 +32,12 @@
 
         <Button Content="Meccskeresés indítása" Style="{StaticResource Button}"
                 Command="{Binding SetUsername}"/>
+
+        <TextBlock Text="{Binding MMState, Mode=TwoWay}"
+                   Name="MMStateTextBlock"
+                   Foreground="#bbbbbb"
+                   HorizontalAlignment="Center"
+                   FontFamily="Arial"
+                   FontSize="20"/>
     </StackPanel>
 </UserControl>

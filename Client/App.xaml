@@ -10,6 +10,7 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Theme/Input.xaml"/>
                 <ResourceDictionary Source="Theme/Button.xaml"/>
+                <ResourceDictionary Source="Theme/WindowControlButton.xaml"/>
             </ResourceDictionary.MergedDictionaries>
 
             <DataTemplate DataType="{x:Type vms:LoginViewModel}">
