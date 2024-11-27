@@ -69,14 +69,11 @@ namespace Client.MVVM.ViewModel
 
 		public void DuplicateUsername()
 		{
-			Application.Current.Dispatcher.Invoke(() =>
-			{
-                GlobalData.Instance.MainVM.SetCurrentView(GlobalData.Instance.LoginVM);
-                GameState.state = State.SetUsername;
-                Username = "";
-                MMState = "Foglalt felhasználónév";
-                MessageBox.Show($"A {GlobalData.Instance.Username} felhasználónév már foglalt.\nVálassz másikat!");
-            }, System.Windows.Threading.DispatcherPriority.Normal);
-		}
+            GlobalData.Instance.MainVM.SetCurrentView(GlobalData.Instance.LoginVM);
+            GameState.state = State.SetUsername;
+            Username = "";
+            MMState = "Foglalt felhasználónév";
+            MessageBox.Show($"A {GlobalData.Instance.Username} felhasználónév már foglalt.\nVálassz másikat!");
+        }
     }
 }

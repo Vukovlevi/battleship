@@ -23,6 +23,7 @@ namespace Client.Core
         public static State state;
         static MainWindow window;
         static Tcp tcp;
+        public static readonly int DefaultShipCount = 5;
 
         public static void SetWindow(MainWindow window)
         {

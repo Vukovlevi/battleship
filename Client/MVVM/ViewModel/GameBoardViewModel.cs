@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace Client.MVVM.ViewModel
 {
@@ -32,12 +33,37 @@ namespace Client.MVVM.ViewModel
 			}
 		}
 
+		private int _enemyRemainingShips;
+		public int EnemyRemainingShips
+		{
+			get { return _enemyRemainingShips; }
+			set
+			{
+				_enemyRemainingShips = value;
+				OnPropertyChanged();
+			}
+		}
+
+		private int _yourRemainingShips;
+		public int YourRemainingShips
+		{
+			get { return _yourRemainingShips; }
+			set
+			{
+				_yourRemainingShips = value;
+				OnPropertyChanged();
+			}
+		}
+
+
 		public void SetUsernames(string username, string enemyUsername)
 		{
-			GlobalData.Instance.MainVM.SetCurrentView(GlobalData.Instance.LoginVM);
+			GlobalData.Instance.MainVM.SetCurrentView(GlobalData.Instance.GameBoardVM);
 			GameState.state = State.PlacingShips;
 			Username = username;
 			EnemyUsername = enemyUsername;
+			EnemyRemainingShips = GameState.DefaultShipCount;
+			YourRemainingShips = GameState.DefaultShipCount;
 		}
 	}
 }

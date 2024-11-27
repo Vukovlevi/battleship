@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Client.MVVM.Model;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -23,6 +24,7 @@ namespace Client.MVVM.View
         public Login()
         {
             InitializeComponent();
+            this.DataContext = GlobalData.Instance.LoginVM;
         }
     }
 }

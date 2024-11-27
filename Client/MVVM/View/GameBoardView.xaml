@@ -12,11 +12,65 @@
         <viewmodel:GameBoardViewModel/>
     </UserControl.DataContext>
     <Grid>
-        <TextBlock Text="{Binding EnemyUsername}"
-                   VerticalAlignment="Center"
-                   HorizontalAlignment="Center"
+        <Grid.RowDefinitions>
+            <RowDefinition Height="50"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="4*"/>
+            <ColumnDefinition Width="4*"/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+
+        <TextBlock VerticalAlignment="Center"
+                   HorizontalAlignment="Left"
                    FontSize="20"
                    FontFamily="Arial"
-                   Foreground="Lightgray"/>
+                   Background="Transparent"
+                   Foreground="LightGray"
+                   Text="{Binding EnemyUsername}"
+                   Margin="10,0,0,0"/>
+
+        <TextBlock VerticalAlignment="Center"
+                   HorizontalAlignment="Right"
+                   FontSize="20"
+                   FontFamily="Arial"
+                   Background="Transparent"
+                   Foreground="LightGray"
+                   Text="{Binding EnemyRemainingShips}"
+                   Margin="0,0,10,0"/>
+
+        <TextBlock Grid.Column="1"
+                   VerticalAlignment="Center"
+                   HorizontalAlignment="Left"
+                   FontSize="20"
+                   FontFamily="Arial"
+                   Background="Transparent"
+                   Foreground="LightGray"
+                   Text="{Binding Username}"
+                   Margin="10,0,0,0"/>
+
+        <TextBlock Grid.Column="1" 
+                   VerticalAlignment="Center"
+                   HorizontalAlignment="Right"
+                   FontSize="20"
+                   FontFamily="Arial"
+                   Background="Transparent"
+                   Foreground="LightGray"
+                   Text="{Binding YourRemainingShips}"
+                   Margin="0,0,10,0"/>
+
+        <Grid x:Name="EnemyBoard"
+              HorizontalAlignment="Center"
+              VerticalAlignment="Center"
+              Grid.Row="1">
+        </Grid>
+
+        <Grid x:Name="YourBoard"
+              HorizontalAlignment="Center"
+              VerticalAlignment="Center"
+              Grid.Row="1"
+              Grid.Column="1">
+        </Grid>
     </Grid>
 </UserControl>

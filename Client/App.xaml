@@ -11,10 +11,16 @@
                 <ResourceDictionary Source="Theme/Input.xaml"/>
                 <ResourceDictionary Source="Theme/Button.xaml"/>
                 <ResourceDictionary Source="Theme/WindowControlButton.xaml"/>
+                <ResourceDictionary Source="Theme/GridHeaderElement.xaml"/>
+                <ResourceDictionary Source="Theme/GridCell.xaml"/>
             </ResourceDictionary.MergedDictionaries>
 
             <DataTemplate DataType="{x:Type vms:LoginViewModel}">
                 <view:Login/>
+            </DataTemplate>
+
+            <DataTemplate DataType="{x:Type vms:GameBoardViewModel}">
+                <view:GameBoardView/>
             </DataTemplate>
         </ResourceDictionary>
     </Application.Resources>
