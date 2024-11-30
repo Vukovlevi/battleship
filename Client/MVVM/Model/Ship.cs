@@ -83,5 +83,54 @@ namespace Client.MVVM.Model
             Asserter.Assert(Cell != null, "cell should not be null when program is trying to access it");
             return Cell;
         }
+
+        public void DeleteShip(Grid grid)
+        {
+            grid.Children.Remove(Cell);
+            IsPlaced = false;
+
+            switch (orientation)
+            {
+                case Core.Orientation.Horizontal:
+                    for (int i = 0; i < Length; i++)
+                    {
+                        Button button = new Button();
+                        button.Style = (Style)button.FindResource("GridCell");
+                        button.Command = new RelayCommand(o =>
+                        {
+                            if (GameState.CurrentShip == null)
+                            {
+                                return;
+                            }
+                            GlobalData.Instance.GameBoardVM.PlaceShip(button, grid);
+                        });
+                        Grid.SetRow(button, StartRow);
+                        Grid.SetColumn(button, StartColumn + i);
+                        grid.Children.Add(button);
+                    }
+                    break;
+                case Core.Orientation.Vertical:
+                    for (int i = 0; i < Length; i++)
+                    {
+                        Button button = new Button();
+                        button.Style = (Style)button.FindResource("GridCell");
+                        button.Command = new RelayCommand(o =>
+                        {
+                            if (GameState.CurrentShip == null)
+                            {
+                                return;
+                            }
+                            GlobalData.Instance.GameBoardVM.PlaceShip(button, grid);
+                        });
+                        Grid.SetRow(button, StartRow + i);
+                        Grid.SetColumn(button, StartColumn);
+                        grid.Children.Add(button);
+                    }
+                    break;
+                default:
+                    Asserter.Assert(false, "orientation can not be other than specified in the enum", "got orientation", orientation.ToString());
+                    break;
+            }
+        }
     }
 }

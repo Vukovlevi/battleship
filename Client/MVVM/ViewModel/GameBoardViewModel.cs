@@ -122,21 +122,46 @@ namespace Client.MVVM.ViewModel
 				return;
 			}
 
-			grid.Children.Remove(cell);
+			List<Button> toRemoveCells = new List<Button>();
+			toRemoveCells.Add(cell);
 			switch (GameState.orientation)
 			{
 				case Core.Orientation.Horizontal:
 					for (int i = 1; i < GameState.CurrentShip.Length; i++)
 					{
+						int shipIndex = GameState.Ships.FindIndex(s => s.StartRow == y && s.StartColumn == x + i);
+						if (shipIndex != -1)
+						{
+							MessageBox.Show("A hajó egy másik hajóba ütközne, ezért nem rakhatod ide!");
+							return;
+						}
+
 						cell = GetButtonAt(y, x + i, grid);
-						grid.Children.Remove(cell);
+						if (cell == null)
+						{
+							MessageBox.Show("A hajó egy másik hajóba ütközne, ezért nem rakhatod ide!");
+							return;
+						}
+						toRemoveCells.Add(cell);
 					}
 					break;
 				case Core.Orientation.Vertical:
 					for (int i = 1; i < GameState.CurrentShip.Length; i++)
 					{
+						int shipIndex = GameState.Ships.FindIndex(s => s.StartRow == y + i && s.StartColumn == x);
+						if (shipIndex != -1)
+						{
+							MessageBox.Show("A hajó egy másik hajóba ütközne, ezért nem rakhatod ide!");
+							return;
+						}
+
 						cell = GetButtonAt(y + i, x, grid);
-						grid.Children.Remove(cell);
+						if (cell == null)
+						{
+							MessageBox.Show("A hajó egy másik hajóba ütközne, ezért nem rakhatod ide!");
+							return;
+						}
+						toRemoveCells.Add(cell);
 					}
 					break;
 				default:
@@ -144,16 +169,32 @@ namespace Client.MVVM.ViewModel
 					break;
 			}
 
+			foreach (Button currCell in toRemoveCells)
+			{
+				grid.Children.Remove(currCell);
+			}
+
 			Button button = GameState.CurrentShip.GetCell();
+            Ship ship = GameState.CurrentShip;
+            button.Command = new RelayCommand(o =>
+			{
+				ship.DeleteShip(grid);
+			});
 			grid.Children.Add(button);
 
 			GameState.CurrentShip.IsPlaced = true;
 			GameState.CurrentShip = null;
 		}
 
-		Button GetButtonAt(int row, int column, Grid grid)
+		Button? GetButtonAt(int row, int column, Grid grid)
 		{
-            return (Button)grid.Children.Cast<UIElement>().First(c => Grid.GetRow(c) == row && Grid.GetColumn(c) == column);
+			try
+			{
+                return (Button)grid.Children.Cast<UIElement>().First(c => Grid.GetRow(c) == row && Grid.GetColumn(c) == column);
+            } catch (Exception e)
+			{
+				return null;
+			}
         }
     }
 }
