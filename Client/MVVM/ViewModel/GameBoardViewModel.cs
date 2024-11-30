@@ -113,6 +113,12 @@ namespace Client.MVVM.ViewModel
 
 		public void PlaceShip(Button cell, Grid grid)
 		{
+			if (GameState.state != State.PlacingShips)
+			{
+				GameState.CurrentShip = null;
+				return;
+			}
+
 			int y = Grid.GetRow(cell);
 			int x = Grid.GetColumn(cell);
 

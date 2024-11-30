@@ -38,11 +38,11 @@ namespace Client.MVVM.ViewModel
             GlobalData.Instance.MainVM = this;
 
 			LoginVM = new LoginViewModel();
-			//CurrentView = LoginVM;
+            CurrentView = LoginVM;
             GlobalData.Instance.LoginVM = LoginVM;
 
 			GameBoardVM = new GameBoardViewModel();
-            CurrentView = GameBoardVM;
+            //CurrentView = GameBoardVM;
             GlobalData.Instance.GameBoardVM = GameBoardVM;
 
             Application.Current.MainWindow.MaxHeight = SystemParameters.MaximizedPrimaryScreenHeight;
