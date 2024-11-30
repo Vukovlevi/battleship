@@ -1,4 +1,5 @@
-﻿using Client.MVVM.Model;
+﻿using Client.Core;
+using Client.MVVM.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,7 +23,7 @@ namespace Client.MVVM.View
     /// </summary>
     public partial class GameBoardView : UserControl
     {
-        private readonly int boardSize = 11;
+        private readonly int boardSize = GlobalData.Instance.BoardSize;
         private readonly int gridCellSize = 40; //also modify styles (GridCell, GridHeaderElement) to match this size
         private readonly string[] letters = { "a", "b", "c", "d", "e", "f", "g", "h", "i", "j" };
         public GameBoardView()
@@ -32,6 +33,7 @@ namespace Client.MVVM.View
 
             GenerateBoard(EnemyBoard);
             GenerateBoard(YourBoard);
+            GenerateShips();
         }
 
         void GenerateBoard(Grid grid)
@@ -74,10 +76,48 @@ namespace Client.MVVM.View
                 {
                     Button button = new Button();
                     button.Style = (Style)FindResource("GridCell");
+                    button.Command = new RelayCommand(o =>
+                    {
+                        if (GameState.CurrentShip == null)
+                        {
+                            return;
+                        }
+                        GlobalData.Instance.GameBoardVM.PlaceShip(button, grid);
+                    });
                     grid.Children.Add(button);
                     Grid.SetRow(button, i);
                     Grid.SetColumn(button, j);
                 }
+            }
+        }
+
+        void GenerateShips()
+        {
+            ShipStackPanel.Children.Clear();
+            foreach (Ship ship in GameState.Ships)
+            {
+                ship.orientation = GameState.orientation;
+                Button button = new Button();
+                button.Style = (Style)FindResource("ShipPlace");
+                button.Height = ship.Length * 20;
+                button.Command = new RelayCommand(o =>
+                {
+                    if (ship.IsPlaced)
+                    {
+                        MessageBox.Show("Nem rakhatod fel többször ugyanazt a hajót!");
+                        return;
+                    }
+
+                    if (GameState.CurrentShip == ship)
+                    {
+                        GameState.CurrentShip = null;
+                        return;
+                    }
+
+                    ship.orientation = GameState.orientation;
+                    GameState.CurrentShip = ship;
+                });
+                ShipStackPanel.Children.Add(button);
             }
         }
     }

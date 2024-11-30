@@ -38,10 +38,11 @@ namespace Client.MVVM.ViewModel
             GlobalData.Instance.MainVM = this;
 
 			LoginVM = new LoginViewModel();
-			CurrentView = LoginVM;
+			//CurrentView = LoginVM;
             GlobalData.Instance.LoginVM = LoginVM;
 
 			GameBoardVM = new GameBoardViewModel();
+            CurrentView = GameBoardVM;
             GlobalData.Instance.GameBoardVM = GameBoardVM;
 
             Application.Current.MainWindow.MaxHeight = SystemParameters.MaximizedPrimaryScreenHeight;
@@ -74,11 +75,13 @@ namespace Client.MVVM.ViewModel
             Tcp tcp = GlobalData.Instance.Tcp;
             Asserter.SetTcp();
             GameState.SetTcp();
+            GameState.SetShips();
             tcp.Connect();
             Thread listeningThread = new Thread(tcp.Listen);
             listeningThread.SetApartmentState(ApartmentState.STA);
             listeningThread.Start();
             GameState.state = State.SetUsername;
+            GameState.orientation = Core.Orientation.Vertical;
         }
 
         public void RestartGame()

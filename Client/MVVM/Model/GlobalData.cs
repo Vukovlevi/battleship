@@ -17,5 +17,6 @@ namespace Client.MVVM.Model
         public LoginViewModel LoginVM { get; set; }
         public GameBoardViewModel GameBoardVM { get; set; }
         public string Username { get; set; }
+        public int BoardSize = 11;
     }
 }

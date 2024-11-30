@@ -18,12 +18,22 @@ namespace Client.Core
         EnemyTurn = 5,
         GameOver = 6,
     }
+
+    enum Orientation
+    {
+        Horizontal = 1,
+        Vertical = 2,
+    }
+
     internal static class GameState
     {
         public static State state;
         static MainWindow window;
         static Tcp tcp;
         public static readonly int DefaultShipCount = 5;
+        public static Core.Orientation orientation;
+        public static Ship? CurrentShip = null;
+        public static List<Ship> Ships = new List<Ship>();
 
         public static void SetWindow(MainWindow window)
         {
@@ -33,6 +43,24 @@ namespace Client.Core
         public static void SetTcp()
         {
             tcp = GlobalData.Instance.Tcp;
+        }
+
+        public static void SetShips()
+        {
+            Ships.Clear();
+            int id = 0;
+            for (int i = 2; i <= 5; i++)
+            {
+                Ship ship = new Ship(id, i, GameState.orientation);
+                Ships.Add(ship);
+                if (i == 3)
+                {
+                    id++;
+                    ship = new Ship(id, i, GameState.orientation);
+                    Ships.Add(ship);
+                }
+                id++;
+            }
         }
 
         public static void HandleCommand(TcpCommand command)
