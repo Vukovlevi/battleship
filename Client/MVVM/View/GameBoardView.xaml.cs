@@ -31,12 +31,12 @@ namespace Client.MVVM.View
             InitializeComponent();
             this.DataContext = GlobalData.Instance.GameBoardVM;
 
-            GenerateBoard(EnemyBoard);
-            GenerateBoard(YourBoard);
+            GenerateBoard(EnemyBoard, false);
+            GenerateBoard(YourBoard, true);
             GenerateShips();
         }
 
-        void GenerateBoard(Grid grid)
+        void GenerateBoard(Grid grid, bool isYourBoard)
         {
             grid.RowDefinitions.Clear();
             grid.ColumnDefinitions.Clear();
@@ -76,14 +76,15 @@ namespace Client.MVVM.View
                 {
                     Button button = new Button();
                     button.Style = (Style)FindResource("GridCell");
-                    button.Command = new RelayCommand(o =>
+                    RelayCommand command;
+                    if (isYourBoard)
                     {
-                        if (GameState.CurrentShip == null)
-                        {
-                            return;
-                        }
-                        GlobalData.Instance.GameBoardVM.PlaceShip(button, grid);
-                    });
+                        command = Ship.PlaceShipCommand(button, grid);
+                    } else
+                    {
+                        command = Ship.GuessSpotCommand(button, grid);
+                    }
+                    button.Command = command;
                     grid.Children.Add(button);
                     Grid.SetRow(button, i);
                     Grid.SetColumn(button, j);

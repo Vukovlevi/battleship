@@ -94,18 +94,45 @@
                    Text="Te hajóid"
                    Margin="0,0,10,5"/>
 
-        <Grid x:Name="EnemyBoard"
-              HorizontalAlignment="Center"
-              VerticalAlignment="Center"
-              Grid.Row="1">
-        </Grid>
+        <StackPanel Grid.Row="1" VerticalAlignment="Center"
+                    HorizontalAlignment="Center">
+            <TextBlock FontSize="50"
+                   FontFamily="Arial"
+                   Background="Transparent"
+                   Foreground="LightGray"
+                   HorizontalAlignment="Center"
+                   Text="Ellenfél táblája"
+                   Margin="0,5,0,30"/>
 
-        <Grid x:Name="YourBoard"
+            <Grid x:Name="EnemyBoard"
               HorizontalAlignment="Center"
-              VerticalAlignment="Center"
-              Grid.Row="1"
-              Grid.Column="1">
-        </Grid>
+              VerticalAlignment="Center">
+            </Grid>
+
+            <Button Content="Hely megtippelése"
+                    Style="{StaticResource Button}"
+                    Margin="0,10,0,0"/>
+        </StackPanel>
+
+        <StackPanel Grid.Row="1" Grid.Column="1" VerticalAlignment="Center"
+                    HorizontalAlignment="Center">
+        <TextBlock FontSize="50"
+                   FontFamily="Arial"
+                   Background="Transparent"
+                   Foreground="LightGray"
+                   HorizontalAlignment="Center"
+                   Text="Te táblád"
+                   Margin="0,5,0,30"/>
+
+            <Grid x:Name="YourBoard"
+              HorizontalAlignment="Center"
+              VerticalAlignment="Center">
+            </Grid>
+
+            <Button Content="Hajók rögzítése"
+                    Style="{StaticResource Button}"
+                    Margin="0,10,0,0"/>
+        </StackPanel>
 
         <StackPanel Grid.Row="1" Grid.Column="2"
                     VerticalAlignment="Center">

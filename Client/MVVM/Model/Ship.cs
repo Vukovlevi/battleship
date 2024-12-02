@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 
 namespace Client.MVVM.Model
 {
@@ -96,14 +97,7 @@ namespace Client.MVVM.Model
                     {
                         Button button = new Button();
                         button.Style = (Style)button.FindResource("GridCell");
-                        button.Command = new RelayCommand(o =>
-                        {
-                            if (GameState.CurrentShip == null)
-                            {
-                                return;
-                            }
-                            GlobalData.Instance.GameBoardVM.PlaceShip(button, grid);
-                        });
+                        button.Command = Ship.PlaceShipCommand(button, grid);
                         Grid.SetRow(button, StartRow);
                         Grid.SetColumn(button, StartColumn + i);
                         grid.Children.Add(button);
@@ -114,14 +108,7 @@ namespace Client.MVVM.Model
                     {
                         Button button = new Button();
                         button.Style = (Style)button.FindResource("GridCell");
-                        button.Command = new RelayCommand(o =>
-                        {
-                            if (GameState.CurrentShip == null)
-                            {
-                                return;
-                            }
-                            GlobalData.Instance.GameBoardVM.PlaceShip(button, grid);
-                        });
+                        button.Command = Ship.PlaceShipCommand(button, grid);
                         Grid.SetRow(button, StartRow + i);
                         Grid.SetColumn(button, StartColumn);
                         grid.Children.Add(button);
@@ -131,6 +118,49 @@ namespace Client.MVVM.Model
                     Asserter.Assert(false, "orientation can not be other than specified in the enum", "got orientation", orientation.ToString());
                     break;
             }
+        }
+
+        public static RelayCommand PlaceShipCommand(Button button, Grid grid)
+        {
+            return new RelayCommand(o =>
+                        {
+                            if (GameState.CurrentShip == null)
+                            {
+                                return;
+                            }
+                            GlobalData.Instance.GameBoardVM.PlaceShip(button, grid);
+                        });
+
+        }
+
+        public static RelayCommand GuessSpotCommand(Button button, Grid grid)
+        {
+            return new RelayCommand(o =>
+            {
+                Ship.DeletePreviousGuess(grid);
+                Button newButton = new Button();
+                newButton.Background = new SolidColorBrush(Colors.Red);
+                newButton.Command = new RelayCommand(o => { Ship.DeletePreviousGuess(grid); });
+                Grid.SetRow(newButton, Grid.GetRow(button));
+                Grid.SetColumn(newButton, Grid.GetColumn(button));
+                grid.Children.Remove(button);
+                grid.Children.Add(newButton);
+                GameState.GuessedPlace = newButton;
+            });
+        }
+
+        public static void DeletePreviousGuess(Grid grid)
+        {
+            if (GameState.GuessedPlace == null) return;
+
+            Button newButton = new Button();
+            newButton.Style = (Style)newButton.FindResource("GridCell");
+            newButton.Command = Ship.GuessSpotCommand(newButton, grid);
+            Grid.SetRow(newButton, Grid.GetRow(GameState.GuessedPlace));
+            Grid.SetColumn(newButton, Grid.GetColumn(GameState.GuessedPlace));
+            grid.Children.Remove(GameState.GuessedPlace);
+            grid.Children.Add(newButton);
+            GameState.GuessedPlace = null;
         }
     }
 }

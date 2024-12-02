@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 
 namespace Client.Core
 {
@@ -34,6 +35,7 @@ namespace Client.Core
         public static Core.Orientation orientation;
         public static Ship? CurrentShip = null;
         public static List<Ship> Ships = new List<Ship>();
+        public static Button? GuessedPlace = null;
 
         public static void SetWindow(MainWindow window)
         {
