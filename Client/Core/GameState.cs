@@ -221,7 +221,26 @@ namespace Client.Core
 
         static void HandleGameOver(TcpCommand command)
         {
-            MessageBox.Show("TODO: change this -- GAME OVER");
+            Asserter.Assert(command.data.Length == 2, "the length of the data should always be 2 when receiving game over command", "got len", command.data.Length.ToString());
+
+            string message = "A játéknak vége!\n";
+            byte reason = Convert.ToByte((command.data[0] >> 7) & 0x1);
+            if (reason == 1)
+            {
+                message += "Az ellenfeled kilépett.";
+                MessageBox.Show(message);
+            } else
+            {
+                byte winner = Convert.ToByte((command.data[0] >> 6) & 0x1);
+                if (winner == 0) message += "Nyertél!";
+                else
+                {
+                    message += "Vesztettél!\n";
+                    byte remainingShips = Convert.ToByte((command.data[0] >> 3) & 0x7);
+                    message += $"Az ellenfelednek {remainingShips} hajója maradt, amit {Tcp.GetByteAsString(command.data[1])} lövésből tudtál volna elsüllyeszteni.";
+                }
+                MessageBox.Show(message);
+            }
             GlobalData.Instance.MainVM.RestartGame();
         }
     }
