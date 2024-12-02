@@ -6,6 +6,7 @@ using System.Linq;
 using System.Security.RightsManagement;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Controls;
 
 namespace Client.MVVM.Model
 {
@@ -17,6 +18,9 @@ namespace Client.MVVM.Model
         public LoginViewModel LoginVM { get; set; }
         public GameBoardViewModel GameBoardVM { get; set; }
         public string Username { get; set; }
+        public string EnemyUsername { get; set; }
         public int BoardSize = 11;
+        public Grid EnemyGrid { get; set; }
+        public Grid YourGrid { get; set; }
     }
 }

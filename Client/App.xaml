@@ -13,6 +13,8 @@
                 <ResourceDictionary Source="Theme/WindowControlButton.xaml"/>
                 <ResourceDictionary Source="Theme/GridHeaderElement.xaml"/>
                 <ResourceDictionary Source="Theme/GridCell.xaml"/>
+                <ResourceDictionary Source="Theme/GuessedSpot.xaml"/>
+                <ResourceDictionary Source="Theme/ConfirmedSpot.xaml"/>
                 <ResourceDictionary Source="Theme/Ships/ShipCell.xaml"/>
                 <ResourceDictionary Source="Theme/Ships/ShipPlace.xaml"/>
             </ResourceDictionary.MergedDictionaries>

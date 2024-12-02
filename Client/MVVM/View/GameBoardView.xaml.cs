@@ -34,6 +34,9 @@ namespace Client.MVVM.View
             GenerateBoard(EnemyBoard, false);
             GenerateBoard(YourBoard, true);
             GenerateShips();
+
+            GlobalData.Instance.EnemyGrid = EnemyBoard;
+            GlobalData.Instance.YourGrid = YourBoard;
         }
 
         void GenerateBoard(Grid grid, bool isYourBoard)

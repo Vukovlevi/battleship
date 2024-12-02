@@ -96,7 +96,7 @@ namespace Client.Core
         {
             byte[] bytes = new byte[Tcp.VERSION_SIZE + Tcp.MESSAGE_TYPE_SIZE];
             bytes[Tcp.VERSION_OFFSET] = Tcp.VERSION;
-            bytes[Tcp.MESSAGE_TYPE_OFFSET] = 1;
+            bytes[Tcp.MESSAGE_TYPE_OFFSET] = Convert.ToByte(commandType);
 
             byte[] len = new byte[Tcp.DATA_LENGTH_SIZE];
             Tcp.PutUint16(len, data.Length);

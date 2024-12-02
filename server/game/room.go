@@ -148,12 +148,12 @@ func (r *GameRoom) HandleShipsReady(command tcp.TcpCommand) {
         r.state = otherPlayer.username //set the state to the other user's name, since he starts
         cmd := tcp.TcpCommand{
             Type: tcp.CommandType.MatchStart,
-            Data: []byte{1},
+            Data: []byte{0},
             Connection: otherPlayer.connection,
         }
         otherPlayer.connection.Send(cmd.EncodeToBytes()) //infrom the players about the match starting
         cmd.Connection = player.connection
-        cmd.Data = []byte{0}
+        cmd.Data = []byte{1}
         player.connection.Send(cmd.EncodeToBytes())
     }
 

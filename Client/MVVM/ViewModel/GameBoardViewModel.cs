@@ -69,12 +69,27 @@ namespace Client.MVVM.ViewModel
 			}
 		}
 
+		private string _status;
 
-		public RelayCommand ChangeOrientation { get; set; }
+		public string Status
+		{
+			get { return _status; }
+			set
+			{
+				_status = value;
+				OnPropertyChanged();
+			}
+		}
+
+
+
+		public RelayCommand ChangeOrientationCommand { get; set; }
+		public RelayCommand SendShipsCommand { get; set; }
+		public RelayCommand SendGuessSpotCommand { get; set; }
 
         public GameBoardViewModel()
         {
-			ChangeOrientation = new RelayCommand(o =>
+			ChangeOrientationCommand = new RelayCommand(o =>
 			{
 				if (GameState.CurrentShip != null)
 				{
@@ -99,6 +114,55 @@ namespace Client.MVVM.ViewModel
             });
 
 			OrientationStatus =  "A jelenlegi irány: függőleges";
+
+            SendShipsCommand = new RelayCommand(o =>
+            {
+                if (GameState.state != State.PlacingShips) return;
+
+                int unPlaced = GameState.Ships.FindIndex(s => !s.IsPlaced);
+                if (unPlaced != -1)
+                {
+                    MessageBox.Show("Az összes hajót fel kell raknod, mielőtt rögzíthetnéd őket!");
+                    return;
+                }
+
+                byte[] bytes = new byte[0];
+                foreach (Ship ship in GameState.Ships)
+                {
+                    bytes = bytes.Concat(ship.GetBytes()).ToArray();
+                }
+
+                TcpCommand command = new TcpCommand(CommandType.ShipsReady, bytes);
+                GlobalData.Instance.Tcp.Send(command.EncodeToBytes());
+
+				GameState.state = State.EnemyTurn;
+            });
+
+			SendGuessSpotCommand = new RelayCommand(o =>
+			{
+				if (GameState.state != State.YourTurn)
+				{
+					MessageBox.Show("Nem te jössz");
+					return;
+				}
+
+				if (GameState.GuessedPlace == null)
+				{
+					MessageBox.Show("Jelölj ki egy helyet, amit meg akarsz tippelni");
+					return;
+				}
+
+				byte[] bytes = new byte[2];
+				int y = Grid.GetRow(GameState.GuessedPlace);
+				int x = Grid.GetColumn(GameState.GuessedPlace);
+				Tcp.PutUint16(bytes, x * 1000 + y);
+
+				TcpCommand command = new TcpCommand(CommandType.PlayerGuess, bytes);
+				GlobalData.Instance.Tcp.Send(command.EncodeToBytes());
+
+				Status = $"{EnemyUsername} jön";
+				GameState.state = State.EnemyTurn;
+			});
         }
 
         public void SetUsernames(string username, string enemyUsername)
@@ -107,6 +171,7 @@ namespace Client.MVVM.ViewModel
 			GameState.state = State.PlacingShips;
 			Username = username;
 			EnemyUsername = enemyUsername;
+			GlobalData.Instance.EnemyUsername = enemyUsername;
 			EnemyRemainingShips = GameState.DefaultShipCount;
 			YourRemainingShips = GameState.DefaultShipCount;
 		}
@@ -192,7 +257,7 @@ namespace Client.MVVM.ViewModel
 			GameState.CurrentShip = null;
 		}
 
-		Button? GetButtonAt(int row, int column, Grid grid)
+		public Button? GetButtonAt(int row, int column, Grid grid)
 		{
 			try
 			{

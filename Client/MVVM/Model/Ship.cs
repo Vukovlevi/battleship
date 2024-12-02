@@ -18,12 +18,14 @@ namespace Client.MVVM.Model
         public int StartColumn { get; private set; } = 0;
         public Core.Orientation orientation { get; set; }
         public int Length { get; private set; }
+        public int Health { get; set; }
         private Button? Cell { get; set; } = null;
 
         public Ship(int id, int length, Core.Orientation orientation)
         {
             Id = id;
             Length = length;
+            Health = length;
             this.orientation = orientation;
         }
 
@@ -120,6 +122,44 @@ namespace Client.MVVM.Model
             }
         }
 
+        public bool ContainsSpot(int row, int column)
+        {
+            for (int i = 0; i < Length; i++)
+            {
+                if (this.orientation == Core.Orientation.Horizontal)
+                {
+                    if (StartRow == row && StartColumn + i == column) return true;
+                } else
+                {
+                    if (StartRow + i == row && StartColumn == column) return true;
+                }
+            }
+
+            return false;
+        }
+
+        public byte[] GetBytes()
+        {
+            byte[] bytes = new byte[1];
+            bytes[0] = Convert.ToByte(this.Length * 2);
+            for (int i = 0; i < Length; i++)
+            {
+                int y = this.StartRow;
+                int x = this.StartColumn;
+                if (this.orientation == Core.Orientation.Horizontal)
+                {
+                    x += i;
+                } else
+                {
+                    y += i;
+                }
+                byte[] spot = new byte[2];
+                Tcp.PutUint16(spot, x * 1000 + y);
+                bytes = bytes.Concat(spot).ToArray();
+            }
+            return bytes;
+        }
+
         public static RelayCommand PlaceShipCommand(Button button, Grid grid)
         {
             return new RelayCommand(o =>
@@ -139,7 +179,7 @@ namespace Client.MVVM.Model
             {
                 Ship.DeletePreviousGuess(grid);
                 Button newButton = new Button();
-                newButton.Background = new SolidColorBrush(Colors.Red);
+                newButton.Style = (Style)newButton.FindResource("GuessedSpot");
                 newButton.Command = new RelayCommand(o => { Ship.DeletePreviousGuess(grid); });
                 Grid.SetRow(newButton, Grid.GetRow(button));
                 Grid.SetColumn(newButton, Grid.GetColumn(button));

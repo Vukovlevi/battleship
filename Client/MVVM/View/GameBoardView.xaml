@@ -15,6 +15,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="50"/>
             <RowDefinition/>
+            <RowDefinition Height="100"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="4*"/>
@@ -111,7 +112,8 @@
 
             <Button Content="Hely megtippelése"
                     Style="{StaticResource Button}"
-                    Margin="0,10,0,0"/>
+                    Margin="0,10,0,0"
+                    Command="{Binding SendGuessSpotCommand}"/>
         </StackPanel>
 
         <StackPanel Grid.Row="1" Grid.Column="1" VerticalAlignment="Center"
@@ -131,6 +133,7 @@
 
             <Button Content="Hajók rögzítése"
                     Style="{StaticResource Button}"
+                    Command="{Binding SendShipsCommand}"
                     Margin="0,10,0,0"/>
         </StackPanel>
 
@@ -153,8 +156,18 @@
                        Foreground="LightGray"/>
                 <Button Content="Csere"
                     Style="{StaticResource Button}"
-                    Command="{Binding ChangeOrientation}"/>
+                    Command="{Binding ChangeOrientationCommand}"/>
             </StackPanel>
         </StackPanel>
+
+        <TextBlock Grid.Row="2" Grid.ColumnSpan="3" FontSize="30"
+                   FontFamily="Arial"
+                   Background="Transparent"
+                   Foreground="LightGray"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   TextAlignment="Center"
+                   Text="{Binding Status}"
+                   Margin="0,5,0,30"/>
     </Grid>
 </UserControl>
