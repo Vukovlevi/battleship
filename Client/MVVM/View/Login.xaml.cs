@@ -25,6 +25,8 @@ namespace Client.MVVM.View
         {
             InitializeComponent();
             this.DataContext = GlobalData.Instance.LoginVM;
+            GameCode.Visibility = Visibility.Collapsed;
+            GlobalData.Instance.GameCode = GameCode;
         }
     }
 }

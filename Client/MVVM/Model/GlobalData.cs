@@ -22,5 +22,6 @@ namespace Client.MVVM.Model
         public int BoardSize = 11;
         public Grid EnemyGrid { get; set; }
         public Grid YourGrid { get; set; }
+        public TextBox GameCode { get; set; }
     }
 }

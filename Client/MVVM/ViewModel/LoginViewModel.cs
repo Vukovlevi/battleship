@@ -25,7 +25,6 @@ namespace Client.MVVM.ViewModel
 		}
 
 		private string _mmState;
-
 		public string MMState
 		{
 			get { return _mmState; }
@@ -36,13 +35,59 @@ namespace Client.MVVM.ViewModel
 			}
 		}
 
+		private bool _isCodeRoom;
+		public bool IsCodeRoom
+		{
+			get { return _isCodeRoom; }
+			set
+			{
+				_isCodeRoom = value;
+
+				if (value) GlobalData.Instance.GameCode.Visibility = Visibility.Visible;
+				else GlobalData.Instance.GameCode.Visibility = Visibility.Collapsed;
+
+				OnPropertyChanged();
+			}
+		}
+
+		private string _joinButtonText;
+
+		public string JoinButtonText
+		{
+			get { return _joinButtonText; }
+			set
+			{
+				_joinButtonText = value;
+				OnPropertyChanged();
+			}
+		}
+
+
+		private string _gameCode;
+		public string GameCode
+		{
+			get { return _gameCode; }
+			set
+			{
+				_gameCode = value;
+				OnPropertyChanged();
+
+				if (value == "") JoinButtonText = "Meccskeresés indítása";
+				else JoinButtonText = "Csatlakozás a játékhoz";
+			}
+		}
+
 		public RelayCommand SetUsername { get; set; }
 
 		public bool IsSearching { get; set; } = false;
 
         public LoginViewModel()
         {
-			SetUsername = new RelayCommand(o =>
+			_isCodeRoom = false;
+            JoinButtonText = "Meccskeresés indítása";
+			GameCode = "";
+
+            SetUsername = new RelayCommand(o =>
 			{
 				if (IsSearching) return;
 
@@ -53,15 +98,37 @@ namespace Client.MVVM.ViewModel
 					return;
 				}
 
-				GlobalData.Instance.Username = Username;
-				MMState = "Meccs keresése folyamatban...";
+                if (Username.Length > 255)
+                {
+                    MessageBox.Show("A név túl hosszú!");
+                    return;
+                }
 
-				GameState.state = State.WaitingForMatch;
-				TcpCommand command = new TcpCommand(CommandType.JoinRequest, ASCIIEncoding.ASCII.GetBytes(Username));
-				GlobalData.Instance.Tcp.Send(command.EncodeToBytes());
+                GlobalData.Instance.Username = Username;
+                GameState.state = State.WaitingForMatch;
 
-				IsSearching = true;
-			});
+                if (GameCode == "")
+				{
+                    MMState = "Meccs keresése folyamatban...";
+
+                    TcpCommand command = new TcpCommand(CommandType.JoinRequest, ASCIIEncoding.ASCII.GetBytes(Username));
+                    GlobalData.Instance.Tcp.Send(command.EncodeToBytes());
+
+                    IsSearching = true;
+                } else
+				{
+					MMState = "Csatlakozás a játékhoz";
+
+					var username = ASCIIEncoding.ASCII.GetBytes(Username);
+					byte[] data = { (byte)username.Length };
+					data = data.Concat(username).Concat(ASCIIEncoding.ASCII.GetBytes(GameCode)).ToArray();
+
+					TcpCommand command = new TcpCommand(CommandType.CodeJoin, data);
+					GlobalData.Instance.Tcp.Send(command.EncodeToBytes());
+
+					IsSearching = true;
+				}
+            });
 
 			MMState = "";
         }
@@ -72,6 +139,8 @@ namespace Client.MVVM.ViewModel
 			Username = "";
 			MMState = "";
 			IsSearching = false;
+			IsCodeRoom = false;
+			GameCode = "";
 		}
 
 		public void DuplicateUsername()

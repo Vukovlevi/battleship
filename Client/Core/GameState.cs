@@ -74,6 +74,9 @@ namespace Client.Core
                 case CommandType.DuplicateUsername:
                     HandleDuplicateUsername();
                     break;
+                case CommandType.CodeJoinRejected:
+                    HandleCodeJoinRejected();
+                    break;
                 case CommandType.MatchFound:
                     HandleMatchFound(command);
                     break;
@@ -103,6 +106,15 @@ namespace Client.Core
             Asserter.Assert(state == State.WaitingForMatch, "getting duplicate username should only occur during waitingForMatch state", "got state", state.ToString());
 
             GlobalData.Instance.LoginVM.DuplicateUsername();
+        }
+
+        static void HandleCodeJoinRejected()
+        {
+            GlobalData.Instance.LoginVM.MMState = "";
+            GlobalData.Instance.LoginVM.GameCode = "";
+            GlobalData.Instance.LoginVM.IsSearching = false;
+            GameState.state = State.SetUsername;
+            MessageBox.Show("A játék, amihez csatlakozni akartál már tele van!");
         }
 
         static void HandleMatchFound(TcpCommand command)
@@ -234,12 +246,27 @@ namespace Client.Core
             } else
             {
                 byte winner = Convert.ToByte((command.data[0] >> 6) & 0x1);
-                if (winner == 0) message += "Nyertél!";
+                if (winner == 0)
+                {
+                    message += "Nyertél!";
+                    GlobalData.Instance.GameBoardVM.EnemyRemainingShips = 0;
+
+                    Button button = new Button();
+                    Grid.SetRow(button, Grid.GetRow(GameState.GuessedPlace));
+                    Grid.SetColumn(button, Grid.GetColumn(GameState.GuessedPlace));
+                    button.Style = (Style)button.FindResource("ConfirmedSpot");
+                    button.Background = new SolidColorBrush(Colors.Red);
+                    GlobalData.Instance.EnemyGrid.Children.Add(button);
+
+                    GlobalData.Instance.EnemyGrid.Children.Remove(GameState.GuessedPlace);
+                    GameState.GuessedPlace = null;
+                }
                 else
                 {
                     message += "Vesztettél!\n";
                     byte remainingShips = Convert.ToByte((command.data[0] >> 3) & 0x7);
                     message += $"Az ellenfelednek {remainingShips} hajója maradt, amit {Tcp.GetByteAsString(command.data[1])} lövésből tudtál volna elsüllyeszteni.";
+                    GlobalData.Instance.GameBoardVM.YourRemainingShips = 0;
                 }
                 MessageBox.Show(message);
                 GlobalData.Instance.GameBoardVM.Status = "A játéknak vége!";

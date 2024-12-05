@@ -30,7 +30,16 @@
 
         <TextBox Style="{StaticResource Input}"/>
 
-        <Button Content="Meccskeresés indítása" Style="{StaticResource Button}"
+        <CheckBox Content="Játék kód használata" Foreground="White"
+                  HorizontalAlignment="Center"
+                  VerticalContentAlignment="Center"
+                  FontSize="20"
+                  Margin="0,0,0,10"
+                  IsChecked="{Binding IsCodeRoom}"/>
+
+        <TextBox Style="{StaticResource CodeInput}" x:Name="GameCode"/>
+
+        <Button Content="{Binding JoinButtonText}" Style="{StaticResource Button}"
                 Command="{Binding SetUsername}"/>
 
         <TextBlock Text="{Binding MMState, Mode=TwoWay}"

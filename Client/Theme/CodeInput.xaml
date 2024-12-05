@@ -1,0 +1,65 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Style TargetType="{x:Type TextBox}" x:Key="CodeInput">
+        <Setter Property="Padding" Value="10"/>
+        <Setter Property="Margin" Value="10"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="Background" Value="#333333"/>
+        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="FontSize" Value="25"/>
+        <Setter Property="FontFamily" Value="Arial"/>
+        <Setter Property="Width" Value="400"/>
+        <Setter Property="Panel.ZIndex" Value="0"/>
+
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type TextBox}">
+                    <Border BorderBrush="#444444" CornerRadius="5" BorderThickness="2" VerticalAlignment="{TemplateBinding VerticalAlignment}"
+                            Background="{TemplateBinding Background}" HorizontalAlignment="{TemplateBinding HorizontalAlignment}">
+                        <Grid>
+                            <TextBox VerticalAlignment="{TemplateBinding VerticalAlignment}"
+                                 Panel.ZIndex="2"
+                                 Margin="10"
+                                 Foreground="{TemplateBinding Foreground}"
+                                 Background="Transparent"
+                                 CaretBrush="White"
+                                 HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
+                                 FontSize="{TemplateBinding FontSize}"
+                                 FontFamily="{TemplateBinding FontFamily}"
+                                 Width="{TemplateBinding Width}"
+                                 BorderThickness="0"
+                                 BorderBrush="Transparent"
+                                 x:Name="InputBox"
+                                 Text="{Binding GameCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+                            <TextBlock Text="Játék kódja" VerticalAlignment="{TemplateBinding VerticalAlignment}"
+                                 Panel.ZIndex="1"
+                                 Foreground="DarkGray"
+                                 Margin="10,0,0,0"
+                                 Background="{TemplateBinding Background}"
+                                 HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
+                                 FontSize="{TemplateBinding FontSize}"
+                                 FontFamily="{TemplateBinding FontFamily}"
+                                 Width="{TemplateBinding Width}"
+                                 IsHitTestVisible="False">
+
+                                <TextBlock.Style>
+                                    <Style TargetType="{x:Type TextBlock}">
+                                        <Setter Property="Visibility" Value="Hidden"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Text, ElementName=InputBox}" Value="">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                                
+                            </TextBlock>
+                        </Grid>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+</ResourceDictionary>
