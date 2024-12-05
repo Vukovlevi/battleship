@@ -81,6 +81,7 @@ func (g *GameServer) HandleCodeJoin(command tcp.TcpCommand) {
         cmd := tcp.CodeJoinRejectedCommand
         cmd.Connection = command.Connection
         cmd.Connection.Send(cmd.EncodeToBytes())
+        g.log.Warning("a player tried to connect to a full room", "code", room.code, "player", player.username)
     }
 
     if room != nil {
