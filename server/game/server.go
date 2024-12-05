@@ -8,6 +8,11 @@ import (
 	"github.com/vukovlevi/battleship/server/tcp"
 )
 
+const (
+    USERNAME_LENGTH_OFFSET = 0
+    USERNAME_LENGTH_SIZE = 1
+)
+
 type GameServer struct {
 	log *logger.Logger
 	MatchMaking     MatchMaking
@@ -63,8 +68,8 @@ func (g *GameServer) GetGameRoomWithCode(code string) *GameRoom {
 }
 
 func (g *GameServer) HandleCodeJoin(command tcp.TcpCommand) {
-    usernameLen := int(command.Data[tcp.HEADER_OFFSET])
-    usernameStart := tcp.HEADER_OFFSET + tcp.USERNAME_LENGTH_SIZE
+    usernameLen := int(command.Data[USERNAME_LENGTH_OFFSET])
+    usernameStart := USERNAME_LENGTH_OFFSET + USERNAME_LENGTH_SIZE
     username := string(command.Data[usernameStart:usernameStart + usernameLen])
 
 	player := &Player{
@@ -74,7 +79,23 @@ func (g *GameServer) HandleCodeJoin(command tcp.TcpCommand) {
         cannotGuessHereSpots: make(map[int]bool),
 	}
 
+    if player.username == "" {
+        cmd := tcp.DataMismatchCommand
+        cmd.Connection = command.Connection
+        cmd.Connection.Send(cmd.EncodeToBytes())
+        g.log.Warning("a player has tried to connect to a coded room without a name", "connection id", cmd.Connection.Id)
+        return
+    }
+
     code := string(command.Data[usernameStart + usernameLen:])
+    if code == "" {
+        cmd := tcp.DataMismatchCommand
+        cmd.Connection = command.Connection
+        cmd.Connection.Send(cmd.EncodeToBytes())
+        g.log.Warning("a player tried to connect to a coded room without providing a code", "player", player.username)
+        return
+    }
+
     room := g.GetGameRoomWithCode(code)
 
     if room != nil && room.IsFull() {
@@ -131,6 +152,14 @@ func handleJoinRequest(g *GameServer, command tcp.TcpCommand) {
 		command.Connection.Send(cmd.EncodeToBytes())
 		return
 	}
+
+    if string(command.Data) == "" {
+        cmd := tcp.DataMismatchCommand
+        cmd.Connection = command.Connection
+        cmd.Connection.Send(cmd.EncodeToBytes())
+        g.log.Warning("a player has tried to connect without a name", "connection id", cmd.Connection.Id)
+        return
+    }
 
 	if g.MatchMaking.HasPlayer(string(command.Data)) {
 		g.log.Debug("duplicate username", "username", string(command.Data))
