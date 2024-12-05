@@ -87,7 +87,7 @@ func (g *GameServer) HandleCodeJoin(command tcp.TcpCommand) {
         room.player2 = player
         room.player2.connection.SendToChan = room.MessageChan
 
-		g.log.Info("new room set", "player1", room.player1.username, "player2", room.player2.username)
+		g.log.Info("new room with code set", "player1", room.player1.username, "player2", room.player2.username, "code", room.code)
 
         room.SendMatchFound()
 		go room.Loop()
@@ -97,6 +97,7 @@ func (g *GameServer) HandleCodeJoin(command tcp.TcpCommand) {
 
     room = newGameRoom(g.log)
     room.code = code
+    g.log.Debug("new room with code was set up", "code", code)
 
     g.mutex.Lock()
     g.Rooms[room] = true
