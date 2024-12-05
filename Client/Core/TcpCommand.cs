@@ -21,6 +21,8 @@ namespace Client.Core
         GameOver = 9,
         CloseEvent = 10,
         Mismatch = 11,
+        CodeJoin = 12,
+        CodeJoinRejected = 13,
     }
 
     enum MismatchType
