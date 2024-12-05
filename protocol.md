@@ -19,6 +19,8 @@
     - 9: game over - data: stats* [server -> client] => this message informs the client about a game being over with the statistics of the match
     - 10: close event - data: none [server -> server, server -> client] => this message informs either the server or the client about a connection being closed, therefore every other connection and open room can be closed
     - 11: mismatch - data: mismatch type* [server -> client] => this message informs the client about a mismatch that was detected in the client's message
+    - 12: code join - data: username length (byte, therefore max len: 255) + username (string in bytes) + code (string in bytes) [client -> server] => this message joins a user to a room that has the code
+    - 13: code join rejected - data: none [server -> client] => this message indicates that the room is full and the player cannot join
 
     - mm*: matchmaking, players are put into here after their successful join request until a room can be set up
     - room*: a room is where the players are put together to play the game, basically the room runs the actual game while the server handles connections and the gateway between mm* and room*
