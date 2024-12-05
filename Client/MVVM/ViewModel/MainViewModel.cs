@@ -90,6 +90,7 @@ namespace Client.MVVM.ViewModel
             StartGame();
             CurrentView = LoginVM;
             LoginVM.Clear();
+            GameBoardVM.Clear();
         }
 
         public void SetCurrentView(object view)

@@ -225,10 +225,12 @@ namespace Client.Core
 
             string message = "A játéknak vége!\n";
             byte reason = Convert.ToByte((command.data[0] >> 7) & 0x1);
+            GameState.state = State.GameOver;
             if (reason == 1)
             {
                 message += "Az ellenfeled kilépett.";
                 MessageBox.Show(message);
+                GlobalData.Instance.GameBoardVM.Status = "Az ellenfeled kilépett";
             } else
             {
                 byte winner = Convert.ToByte((command.data[0] >> 6) & 0x1);
@@ -240,8 +242,8 @@ namespace Client.Core
                     message += $"Az ellenfelednek {remainingShips} hajója maradt, amit {Tcp.GetByteAsString(command.data[1])} lövésből tudtál volna elsüllyeszteni.";
                 }
                 MessageBox.Show(message);
+                GlobalData.Instance.GameBoardVM.Status = "A játéknak vége!";
             }
-            GlobalData.Instance.MainVM.RestartGame();
         }
     }
 }

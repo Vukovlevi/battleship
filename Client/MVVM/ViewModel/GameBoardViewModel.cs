@@ -86,9 +86,15 @@ namespace Client.MVVM.ViewModel
 		public RelayCommand ChangeOrientationCommand { get; set; }
 		public RelayCommand SendShipsCommand { get; set; }
 		public RelayCommand SendGuessSpotCommand { get; set; }
+		public RelayCommand LeaveMatchCommand { get; set; }
 
         public GameBoardViewModel()
         {
+			LeaveMatchCommand = new RelayCommand(o =>
+			{
+				GlobalData.Instance.MainVM.RestartGame();
+			});
+
 			ChangeOrientationCommand = new RelayCommand(o =>
 			{
 				if (GameState.CurrentShip != null)
@@ -117,6 +123,12 @@ namespace Client.MVVM.ViewModel
 
             SendShipsCommand = new RelayCommand(o =>
             {
+				if (GameState.state == State.GameOver)
+				{
+					MessageBox.Show("A meccsnek vége, ezért nem játszhatsz tovább!\nHa szeretnél új játékot indítani, hagyd el a meccset!");
+					return;
+				}
+
                 if (GameState.state != State.PlacingShips) return;
 
                 int unPlaced = GameState.Ships.FindIndex(s => !s.IsPlaced);
@@ -140,6 +152,12 @@ namespace Client.MVVM.ViewModel
 
 			SendGuessSpotCommand = new RelayCommand(o =>
 			{
+				if (GameState.state == State.GameOver)
+				{
+					MessageBox.Show("A meccsnek vége, ezért nem játszhatsz tovább!\nHa szeretnél új játékot indítani, hagyd el a meccset!");
+					return;
+				}
+
 				if (GameState.state != State.YourTurn)
 				{
 					MessageBox.Show("Nem te jössz");
@@ -267,5 +285,11 @@ namespace Client.MVVM.ViewModel
 				return null;
 			}
         }
+
+		public void Clear()
+		{
+			OrientationStatus =  "A jelenlegi irány: függőleges";
+			Status = "";
+		}
     }
 }

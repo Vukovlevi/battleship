@@ -38,10 +38,14 @@ namespace Client.MVVM.ViewModel
 
 		public RelayCommand SetUsername { get; set; }
 
+		public bool IsSearching { get; set; } = false;
+
         public LoginViewModel()
         {
 			SetUsername = new RelayCommand(o =>
 			{
+				if (IsSearching) return;
+
 				if (String.IsNullOrEmpty(Username) || String.IsNullOrWhiteSpace(Username))
 				{
 					MMState = "Érvénytelen felhasználónév";
@@ -55,6 +59,8 @@ namespace Client.MVVM.ViewModel
 				GameState.state = State.WaitingForMatch;
 				TcpCommand command = new TcpCommand(CommandType.JoinRequest, ASCIIEncoding.ASCII.GetBytes(Username));
 				GlobalData.Instance.Tcp.Send(command.EncodeToBytes());
+
+				IsSearching = true;
 			});
 
 			MMState = "";
@@ -65,6 +71,7 @@ namespace Client.MVVM.ViewModel
 			GameState.state = State.SetUsername;
 			Username = "";
 			MMState = "";
+			IsSearching = false;
 		}
 
 		public void DuplicateUsername()

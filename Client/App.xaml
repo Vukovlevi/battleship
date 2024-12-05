@@ -10,6 +10,7 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Theme/Input.xaml"/>
                 <ResourceDictionary Source="Theme/Button.xaml"/>
+                <ResourceDictionary Source="Theme/RedButton.xaml"/>
                 <ResourceDictionary Source="Theme/WindowControlButton.xaml"/>
                 <ResourceDictionary Source="Theme/GridHeaderElement.xaml"/>
                 <ResourceDictionary Source="Theme/GridCell.xaml"/>
