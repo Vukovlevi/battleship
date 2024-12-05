@@ -32,6 +32,20 @@ type GameRoom struct {
 	MessageChan chan tcp.TcpCommand
 	closeChan chan *GameRoom
     state string
+    code string
+}
+
+func newGameRoom(log *logger.Logger) *GameRoom {
+	gameRoom := new(GameRoom)
+
+	gameRoom.log = log
+	gameRoom.MessageChan = make(chan tcp.TcpCommand)
+
+	return gameRoom
+}
+
+func (r *GameRoom) IsFull() bool {
+    return r.player1 != nil && r.player2 != nil
 }
 
 func (r *GameRoom) CloseRoom(command *tcp.TcpCommand) {

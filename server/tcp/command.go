@@ -6,17 +6,19 @@ import (
 )
 
 type CommandTypeEnum struct {
-	JoinRequest       byte
-	DuplicateUsername byte
-	MatchFound        byte
-	ShipsReady        byte
-	PlayerReady       byte
-	MatchStart        byte
-	PlayerGuess       byte
-	GuessConfirm      byte
-	GameOver          byte
-	Close 			  byte
-	Mismatch		  byte
+    JoinRequest       byte
+    DuplicateUsername byte
+    MatchFound        byte
+    ShipsReady        byte
+    PlayerReady       byte
+    MatchStart        byte
+    PlayerGuess       byte
+    GuessConfirm      byte
+    GameOver          byte
+    Close 			  byte
+    Mismatch		  byte
+    CodeJoin		  byte
+    CodeJoinRejected  byte
 }
 
 type TcpError struct {
@@ -45,6 +47,8 @@ var (
 		GameOver:          9,
 		Close: 			   10,
 		Mismatch: 		   11,
+		CodeJoin: 		   12,
+		CodeJoinRejected:  13,
 	}
 
 	CloseCommand = TcpCommand{
@@ -76,6 +80,12 @@ var (
 		Type: CommandType.Mismatch,
 		Data: []byte{3},
 	}
+
+    CodeJoinRejectedCommand = TcpCommand{
+        Connection: nil,
+        Type: CommandType.CodeJoinRejected,
+        Data: make([]byte, 0),
+    }
 )
 
 type TcpCommand struct {

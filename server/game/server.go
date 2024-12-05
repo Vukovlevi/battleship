@@ -52,6 +52,61 @@ func (g *GameServer) Start() {
 	}()
 }
 
+func (g *GameServer) GetGameRoomWithCode(code string) *GameRoom {
+    for room, _ := range g.Rooms {
+        if room.code == code {
+            return room
+        }
+    }
+
+    return nil
+}
+
+func (g *GameServer) HandleCodeJoin(command tcp.TcpCommand) {
+    usernameLen := int(command.Data[tcp.HEADER_OFFSET])
+    usernameStart := tcp.HEADER_OFFSET + tcp.USERNAME_LENGTH_SIZE
+    username := string(command.Data[usernameStart:usernameStart + usernameLen])
+
+	player := &Player{
+		username: username,
+		connection: command.Connection,
+		ships: make([]Ship, 0),
+        cannotGuessHereSpots: make(map[int]bool),
+	}
+
+    code := string(command.Data[usernameStart + usernameLen:])
+    room := g.GetGameRoomWithCode(code)
+
+    if room != nil && room.IsFull() {
+        cmd := tcp.CodeJoinRejectedCommand
+        cmd.Connection = command.Connection
+        cmd.Connection.Send(cmd.EncodeToBytes())
+    }
+
+    if room != nil {
+        room.player2 = player
+        room.player2.connection.SendToChan = room.MessageChan
+
+		g.log.Info("new room set", "player1", room.player1.username, "player2", room.player2.username)
+
+        room.SendMatchFound()
+		go room.Loop()
+
+        return
+    }
+
+    room = newGameRoom(g.log)
+    room.code = code
+
+    g.mutex.Lock()
+    g.Rooms[room] = true
+    g.mutex.Unlock()
+    room.closeChan = g.GameRoomCloseChan
+
+    room.player1 = player
+    room.player1.connection.SendToChan = room.MessageChan
+}
+
 func handleJoinRequest(g *GameServer, command tcp.TcpCommand) {
 	switch command.Type {
 	case tcp.CommandType.Close: //on close event delete player from mm, otherwise do nothing
@@ -60,6 +115,9 @@ func handleJoinRequest(g *GameServer, command tcp.TcpCommand) {
 			delete(g.MatchMaking.Players, player)
 			g.MatchMaking.mutex.Unlock()
 		}
+        return
+    case tcp.CommandType.CodeJoin:
+        g.HandleCodeJoin(command)
         return
 	case tcp.CommandType.JoinRequest: //this is expected, we can break the switch and just put the player int mm, which this function does
 		break

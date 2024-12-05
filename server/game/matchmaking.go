@@ -42,6 +42,7 @@ func (m *MatchMaking) SetupGame() *GameRoom {
 	}
 
 	gameRoom := new(GameRoom)
+    gameRoom.code = ""
 
 	players := 0
 	for player := range m.Players {
