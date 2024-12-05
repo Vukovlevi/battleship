@@ -385,7 +385,7 @@ func TestEndToEnd(t *testing.T) {
     cmdType = buf[tcp.MESSAGE_TYPE_OFFSET: tcp.MESSAGE_TYPE_OFFSET + tcp.MESSAGE_TYPE_SIZE][0]
     data := buf[tcp.HEADER_OFFSET]
     assert.Assert(cmdType == tcp.CommandType.MatchStart, "there should be a match start command conn1", "got cmd type", cmdType)
-    assert.Assert(data == 1, "player1 should be the starting one")
+    assert.Assert(data == 0, "player1 should be the starting one")
 
     buf = make([]byte, 256)
     n, err = conn2.Read(buf)
@@ -394,7 +394,7 @@ func TestEndToEnd(t *testing.T) {
     cmdType = buf[tcp.MESSAGE_TYPE_OFFSET: tcp.MESSAGE_TYPE_OFFSET + tcp.MESSAGE_TYPE_SIZE][0]
     data = buf[tcp.HEADER_OFFSET]
     assert.Assert(cmdType == tcp.CommandType.MatchStart, "there should be a match start command conn2", "got cmd type", cmdType)
-    assert.Assert(data == 0, "player2 should not be the starting one")
+    assert.Assert(data == 1, "player2 should not be the starting one")
 
     //testing unexpected ships sending
     conn1.Write(cmd.EncodeToBytes())
