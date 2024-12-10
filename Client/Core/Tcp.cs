@@ -30,7 +30,7 @@ namespace Client.Core
         TcpClient? client = null;
         bool listen = false;
 
-        public Tcp(string address = "127.0.0.1", int port = 42069)
+        public Tcp(string address = "vukovlevi.dev", int port = 42069)
         {
             Asserter.Assert(client == null, "tcp client should be only initialized once");
 
