@@ -120,6 +120,11 @@ namespace Client.MVVM.Model
                     Asserter.Assert(false, "orientation can not be other than specified in the enum", "got orientation", orientation.ToString());
                     break;
             }
+
+            StartRow = 0;
+            StartColumn = 0;
+            orientation = GameState.orientation;
+            GameState.CurrentShip = this;
         }
 
         public bool ContainsSpot(int row, int column)
