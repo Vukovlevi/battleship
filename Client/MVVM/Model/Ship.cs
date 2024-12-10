@@ -142,6 +142,19 @@ namespace Client.MVVM.Model
         {
             byte[] bytes = new byte[1];
             bytes[0] = Convert.ToByte(this.Length * 2);
+            var positions = GetPositions();
+            foreach (var pos in positions)
+            {
+                byte[] spot = new byte[2];
+                Tcp.PutUint16(spot, pos);
+                bytes = bytes.Concat(spot).ToArray();
+            }
+            return bytes;
+        }
+
+        public int[] GetPositions()
+        {
+            int[] positions = new int[Length];
             for (int i = 0; i < Length; i++)
             {
                 int y = this.StartRow;
@@ -153,11 +166,9 @@ namespace Client.MVVM.Model
                 {
                     y += i;
                 }
-                byte[] spot = new byte[2];
-                Tcp.PutUint16(spot, x * 1000 + y);
-                bytes = bytes.Concat(spot).ToArray();
+                positions[i] = x * 1000 + y;
             }
-            return bytes;
+            return positions;
         }
 
         public static RelayCommand PlaceShipCommand(Button button, Grid grid)

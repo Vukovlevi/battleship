@@ -23,5 +23,6 @@ namespace Client.MVVM.Model
         public Grid EnemyGrid { get; set; }
         public Grid YourGrid { get; set; }
         public TextBox GameCode { get; set; }
+        public List<int> YourNotGuessedShipSpots = new List<int>(); //the spots that hold your ships and have not been guessed by the enemy
     }
 }

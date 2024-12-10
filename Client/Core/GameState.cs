@@ -155,36 +155,44 @@ namespace Client.Core
             Application.Current.Dispatcher.Invoke(() =>
             {
                 int spot = Tcp.GetUint16(command.data);
+                GlobalData.Instance.YourNotGuessedShipSpots.Remove(spot);
+
                 int x = spot / 1000;
                 int y = spot % 1000;
 
-                Button button = new Button();
-                button.Style = (Style)button.FindResource("ConfirmedSpot");
-                Grid.SetRow(button, y);
-                Grid.SetColumn(button, x);
-                Panel.SetZIndex(button, 1);
+                var button = CreateConfirmedSpot(x, y);
                 GlobalData.Instance.YourGrid.Children.Add(button);
-
-                int shipIndex = GameState.Ships.FindIndex(s => s.ContainsSpot(y, x));
-                if (shipIndex != -1)
-                {
-                    button.Background = new SolidColorBrush(Colors.Red);
-
-                    Ship ship = GameState.Ships.Find(s => s.ContainsSpot(y, x));
-                    ship.Health--;
-                    if (ship.Health == 0)
-                    {
-                        GlobalData.Instance.GameBoardVM.YourRemainingShips--;
-                    }
-                }
-                else
-                {
-                    button.Background = new SolidColorBrush(Colors.White);
-                }
 
                 GameState.state = State.YourTurn;
                 GlobalData.Instance.GameBoardVM.Status = "Te jössz";
             });
+        }
+
+        static Button CreateConfirmedSpot(int x, int y)
+        {
+            Button button = new Button();
+            button.Style = (Style)button.FindResource("ConfirmedSpot");
+            Grid.SetRow(button, y);
+            Grid.SetColumn(button, x);
+            Panel.SetZIndex(button, 1);
+
+            int shipIndex = GameState.Ships.FindIndex(s => s.ContainsSpot(y, x));
+            if (shipIndex != -1)
+            {
+                button.Background = new SolidColorBrush(Colors.Red);
+
+                GameState.Ships[shipIndex].Health--;
+                if (GameState.Ships[shipIndex].Health == 0)
+                {
+                    GlobalData.Instance.GameBoardVM.YourRemainingShips--;
+                }
+            }
+            else
+            {
+                button.Background = new SolidColorBrush(Colors.White);
+            }
+
+            return button;
         }
 
         static void HandleGuessConfirm(TcpCommand command)
@@ -270,6 +278,11 @@ namespace Client.Core
                         byte remainingShips = Convert.ToByte((command.data[0] >> 3) & 0x7);
                         message += $"Az ellenfelednek {remainingShips} hajója maradt, amit {Tcp.GetByteAsString(command.data[1])} lövésből tudtál volna elsüllyeszteni.";
                         GlobalData.Instance.GameBoardVM.YourRemainingShips = 0;
+
+                        int x = GlobalData.Instance.YourNotGuessedShipSpots[0] / 1000;
+                        int y = GlobalData.Instance.YourNotGuessedShipSpots[0] % 1000;
+                        var button = CreateConfirmedSpot(x, y);
+                        GlobalData.Instance.YourGrid.Children.Add(button);
                     }
                     MessageBox.Show(message);
                     GlobalData.Instance.GameBoardVM.Status = "A játéknak vége!";

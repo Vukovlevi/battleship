@@ -146,6 +146,8 @@ namespace Client.MVVM.ViewModel
                 byte[] bytes = new byte[0];
                 foreach (Ship ship in GameState.Ships)
                 {
+					var positions = ship.GetPositions();
+					foreach (var position in positions) { GlobalData.Instance.YourNotGuessedShipSpots.Add(position); }
                     bytes = bytes.Concat(ship.GetBytes()).ToArray();
                 }
 
