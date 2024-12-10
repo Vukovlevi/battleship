@@ -235,42 +235,46 @@ namespace Client.Core
         {
             Asserter.Assert(command.data.Length == 2, "the length of the data should always be 2 when receiving game over command", "got len", command.data.Length.ToString());
 
-            string message = "A játéknak vége!\n";
-            byte reason = Convert.ToByte((command.data[0] >> 7) & 0x1);
-            GameState.state = State.GameOver;
-            if (reason == 1)
+            Application.Current.Dispatcher.Invoke(() =>
             {
-                message += "Az ellenfeled kilépett.";
-                MessageBox.Show(message);
-                GlobalData.Instance.GameBoardVM.Status = "Az ellenfeled kilépett";
-            } else
-            {
-                byte winner = Convert.ToByte((command.data[0] >> 6) & 0x1);
-                if (winner == 0)
+                string message = "A játéknak vége!\n";
+                byte reason = Convert.ToByte((command.data[0] >> 7) & 0x1);
+                GameState.state = State.GameOver;
+                if (reason == 1)
                 {
-                    message += "Nyertél!";
-                    GlobalData.Instance.GameBoardVM.EnemyRemainingShips = 0;
-
-                    Button button = new Button();
-                    Grid.SetRow(button, Grid.GetRow(GameState.GuessedPlace));
-                    Grid.SetColumn(button, Grid.GetColumn(GameState.GuessedPlace));
-                    button.Style = (Style)button.FindResource("ConfirmedSpot");
-                    button.Background = new SolidColorBrush(Colors.Red);
-                    GlobalData.Instance.EnemyGrid.Children.Add(button);
-
-                    GlobalData.Instance.EnemyGrid.Children.Remove(GameState.GuessedPlace);
-                    GameState.GuessedPlace = null;
+                    message += "Az ellenfeled kilépett.";
+                    MessageBox.Show(message);
+                    GlobalData.Instance.GameBoardVM.Status = "Az ellenfeled kilépett";
                 }
                 else
                 {
-                    message += "Vesztettél!\n";
-                    byte remainingShips = Convert.ToByte((command.data[0] >> 3) & 0x7);
-                    message += $"Az ellenfelednek {remainingShips} hajója maradt, amit {Tcp.GetByteAsString(command.data[1])} lövésből tudtál volna elsüllyeszteni.";
-                    GlobalData.Instance.GameBoardVM.YourRemainingShips = 0;
+                    byte winner = Convert.ToByte((command.data[0] >> 6) & 0x1);
+                    if (winner == 0)
+                    {
+                        message += "Nyertél!";
+                        GlobalData.Instance.GameBoardVM.EnemyRemainingShips = 0;
+
+                        Button button = new Button();
+                        Grid.SetRow(button, Grid.GetRow(GameState.GuessedPlace));
+                        Grid.SetColumn(button, Grid.GetColumn(GameState.GuessedPlace));
+                        button.Style = (Style)button.FindResource("ConfirmedSpot");
+                        button.Background = new SolidColorBrush(Colors.Red);
+                        GlobalData.Instance.EnemyGrid.Children.Add(button);
+
+                        GlobalData.Instance.EnemyGrid.Children.Remove(GameState.GuessedPlace);
+                        GameState.GuessedPlace = null;
+                    }
+                    else
+                    {
+                        message += "Vesztettél!\n";
+                        byte remainingShips = Convert.ToByte((command.data[0] >> 3) & 0x7);
+                        message += $"Az ellenfelednek {remainingShips} hajója maradt, amit {Tcp.GetByteAsString(command.data[1])} lövésből tudtál volna elsüllyeszteni.";
+                        GlobalData.Instance.GameBoardVM.YourRemainingShips = 0;
+                    }
+                    MessageBox.Show(message);
+                    GlobalData.Instance.GameBoardVM.Status = "A játéknak vége!";
                 }
-                MessageBox.Show(message);
-                GlobalData.Instance.GameBoardVM.Status = "A játéknak vége!";
-            }
+            });
         }
     }
 }
