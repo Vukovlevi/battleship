@@ -92,7 +92,12 @@ namespace Client.MVVM.ViewModel
         {
 			LeaveMatchCommand = new RelayCommand(o =>
 			{
-				GlobalData.Instance.MainVM.RestartGame();
+				if (GameState.state != State.GameOver)
+				{
+                    MessageBoxResult result = MessageBox.Show("Biztosan el akarod hagyni a meccset?", "Meccs elhagyása", MessageBoxButton.YesNo, MessageBoxImage.Question);
+					if (result == MessageBoxResult.No) return;
+                }
+                GlobalData.Instance.MainVM.RestartGame();
 			});
 
 			ChangeOrientationCommand = new RelayCommand(o =>
