@@ -277,7 +277,6 @@ namespace Client.Core
                         message += "Vesztettél!\n";
                         byte remainingShips = Convert.ToByte((command.data[0] >> 3) & 0x7);
                         message += $"Az ellenfelednek {remainingShips} hajója maradt, amit {Tcp.GetByteAsString(command.data[1])} lövésből tudtál volna elsüllyeszteni.";
-                        GlobalData.Instance.GameBoardVM.YourRemainingShips = 0;
 
                         int x = GlobalData.Instance.YourNotGuessedShipSpots[0] / 1000;
                         int y = GlobalData.Instance.YourNotGuessedShipSpots[0] % 1000;
