@@ -136,7 +136,6 @@ namespace Client.MVVM.ViewModel
 		public void Clear()
 		{
 			GameState.state = State.SetUsername;
-			Username = "";
 			MMState = "";
 			IsSearching = false;
 			IsCodeRoom = false;
