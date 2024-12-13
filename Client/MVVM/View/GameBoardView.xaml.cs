@@ -2,6 +2,7 @@
 using Client.MVVM.Model;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -115,12 +116,16 @@ namespace Client.MVVM.View
                     if (GameState.CurrentShip == ship)
                     {
                         GameState.CurrentShip = null;
+                        ship.PlaceButton.Background = new SolidColorBrush(Colors.Gray);
                         return;
                     }
 
                     ship.orientation = GameState.orientation;
                     GameState.CurrentShip = ship;
+                    ship.PlaceButton.Background = new SolidColorBrush(Colors.LightGray);
                 });
+                ship.PlaceButton = button;
+                button.Background = new SolidColorBrush(Colors.Gray);
                 ShipStackPanel.Children.Add(button);
             }
         }

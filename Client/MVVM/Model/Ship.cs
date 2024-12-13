@@ -20,6 +20,7 @@ namespace Client.MVVM.Model
         public int Length { get; private set; }
         public int Health { get; set; }
         private Button? Cell { get; set; } = null;
+        public Button? PlaceButton { get; set; } = null;
 
         public Ship(int id, int length, Core.Orientation orientation)
         {
@@ -125,6 +126,7 @@ namespace Client.MVVM.Model
             StartColumn = 0;
             orientation = GameState.orientation;
             GameState.CurrentShip = this;
+            PlaceButton.Background = new SolidColorBrush(Colors.LightGray);
         }
 
         public bool ContainsSpot(int row, int column)

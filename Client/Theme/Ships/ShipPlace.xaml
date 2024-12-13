@@ -8,21 +8,24 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type Button}">
-                    <Border Width="{TemplateBinding Width}" Height="{TemplateBinding Height}" BorderBrush="{x:Null}" BorderThickness="0" Margin="{TemplateBinding Margin}">
-                        <ContentPresenter Content="{TemplateBinding Content}"/>
+                    <Grid>
+                        <Border Visibility="Collapsed" Background="{TemplateBinding Background}" x:Name="PlaceHolderBorder"/>
+                        <Border Width="{TemplateBinding Width}" Height="{TemplateBinding Height}" BorderBrush="{x:Null}" BorderThickness="0" Margin="{TemplateBinding Margin}"
+                            x:Name="ButtonBorder">
+                            <ContentPresenter Content="{TemplateBinding Content}"/>
 
-                        <Border.Style>
-                            <Style TargetType="Border">
-                                <Setter Property="Background" Value="Gray"/>
-
-                                <Style.Triggers>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Background" Value="LightGray"/>
-                                    </Trigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Border.Style>
-                    </Border>
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Setter Property="Background" Value="{Binding Background, ElementName=PlaceHolderBorder}"/>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="LightGray"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                        </Border>
+                    </Grid>
 
                 </ControlTemplate>
             </Setter.Value>

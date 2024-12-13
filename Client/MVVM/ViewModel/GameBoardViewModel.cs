@@ -279,6 +279,7 @@ namespace Client.MVVM.ViewModel
 			grid.Children.Add(button);
 
 			GameState.CurrentShip.IsPlaced = true;
+			GameState.CurrentShip.PlaceButton.Background = new SolidColorBrush(Color.FromRgb(68, 68, 68));
 			GameState.CurrentShip = null;
 		}
 
