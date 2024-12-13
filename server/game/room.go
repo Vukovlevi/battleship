@@ -258,6 +258,8 @@ func (r *GameRoom) HandleGameOver(winner *Player, loser *Player) {
 
     winner.connection.GameOver = true
     loser.connection.GameOver = true
+
+    r.CloseRoom(nil)
 }
 
 func (r *GameRoom) Loop() {

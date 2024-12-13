@@ -141,7 +141,12 @@ namespace Client.Core
             Asserter.Assert(version == VERSION, "the version of the client does not match the version of the server", "client version", GetByteAsString(VERSION), "server version", GetByteAsString(version));
 
             int len = GetUint16(data.Skip(DATA_LENGTH_OFFSET).Take(DATA_LENGTH_SIZE).ToArray());
-            Asserter.Assert(HEADER_OFFSET + len == data.Length, "the length of the message doesnt equals to the said length", "said length", len.ToString(), "real length", data.Length.ToString());
+            string display = "";
+            foreach (var elem in data)
+            {
+                display += GetByteAsString(elem) + " ";
+            }
+            Asserter.Assert(HEADER_OFFSET + len == data.Length, "the length of the message doesnt equals to the said length", "said length", (len + 4).ToString(), "real length", data.Length.ToString(), "data", display);
 
             byte type = data.Skip(MESSAGE_TYPE_OFFSET).Take(MESSAGE_TYPE_SIZE).ToArray()[0];
             TcpCommand command = new TcpCommand(type, data.Skip(HEADER_OFFSET).ToArray());
