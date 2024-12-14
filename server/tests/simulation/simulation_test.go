@@ -141,9 +141,9 @@ func TestGame(t *testing.T) {
         n1, err1 := conn1.Read(buf1)
         assert.Nil(err1, "there should be no error on reading guess confirm from conn1")
         assert.Assert(n1 > 0, "reading message from conn1 should be more than 0 bytes")
-        over1 := testPositionResponse(pos, buf1[:n1], true)
+        over1 := testPositionResponse(pos, buf1[:n1], true, log)
         if over1 {
-            over2 := testPositionResponse(pos, buf2[:n2], false)
+            over2 := testPositionResponse(pos, buf2[:n2], false, log)
             assert.Assert(over2, "conn2 should get the game over event as well")
             continue
         }
@@ -156,7 +156,7 @@ func TestGame(t *testing.T) {
         n2, err2 = conn2.Read(buf2)
         assert.Nil(err2, "there should be no error on reading guess confirm from conn1")
         assert.Assert(n2 > 0, "reading message from conn1 should be more than 0 bytes")
-        over2 := testPositionResponse(pos, buf2[:n2], false)
+        over2 := testPositionResponse(pos, buf2[:n2], false, log)
         assert.Assert(!over2, "conn2 should never be the reason for game over (the winner)")
     }
 
@@ -165,7 +165,7 @@ func TestGame(t *testing.T) {
     time.Sleep(time.Millisecond * 10)
 }
 
-func testPositionResponse(pos int, resp []byte, won bool) bool {
+func testPositionResponse(pos int, resp []byte, won bool, log logger.Logger) bool {
     switch pos {
     case 1002:
     case 4001:
@@ -177,6 +177,7 @@ func testPositionResponse(pos int, resp []byte, won bool) bool {
         hit := resp[tcp.HEADER_OFFSET]
         assert.Assert((hit >> 6) & 3 == 3, "every guess should be a hit", "got byte", hit)
         assert.Assert((hit >> 5) & 1 == 1, "these guesses should sink a ship", "got byte", hit)
+        assert.Assert(len(resp[tcp.HEADER_OFFSET:]) > 1, "the length of the received message should be more than 1, because it should contain the ships positions", "got data", resp[tcp.HEADER_OFFSET:])
 
         return false
     case 5008:

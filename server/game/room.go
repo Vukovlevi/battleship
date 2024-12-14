@@ -236,7 +236,9 @@ func (r *GameRoom) HandlePlayerGuess(command tcp.TcpCommand) {
     // 11000000 -- hit shifted
     // 11100000 -- result of or
     cmd.Data[0] = cmd.Data[0] | (sink << shiftGuessSinkBy) //setting the data according to protocol specification
-    cmd.Data = append(cmd.Data, sunkenShip.GetPositionsInBytes()...)
+    if sunkenShip != nil {
+        cmd.Data = append(cmd.Data, sunkenShip.GetPositionsInBytes()...)
+    }
     player.connection.Send(cmd.EncodeToBytes()) //send guess confirm to player
 
     player.cannotGuessHereSpots[spot] = true //mark spot as unguessable
