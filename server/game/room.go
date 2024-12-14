@@ -209,7 +209,7 @@ func (r *GameRoom) HandlePlayerGuess(command tcp.TcpCommand) {
         return
     }
 
-    hit, sink := otherPlayer.IsHit(spot) //test the hit
+    hit, sink, sunkenShip := otherPlayer.IsHit(spot) //test the hit
     remainingShips, _ := otherPlayer.RemainingHealth() //check for a winner, if there is one, handle gameover event instead of guess confirm and player guess to the other player
     r.log.Debug("handling player guess", "player", player.username, "spot", spot, "isHit", hit, "didSink", sink, "enemy remaining ships", remainingShips)
     if remainingShips == 0 {
@@ -236,6 +236,7 @@ func (r *GameRoom) HandlePlayerGuess(command tcp.TcpCommand) {
     // 11000000 -- hit shifted
     // 11100000 -- result of or
     cmd.Data[0] = cmd.Data[0] | (sink << shiftGuessSinkBy) //setting the data according to protocol specification
+    cmd.Data = append(cmd.Data, sunkenShip.GetPositionsInBytes()...)
     player.connection.Send(cmd.EncodeToBytes()) //send guess confirm to player
 
     player.cannotGuessHereSpots[spot] = true //mark spot as unguessable

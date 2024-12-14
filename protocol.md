@@ -31,7 +31,7 @@
     - a list of ship*
 
 ### Ship*:
-1 byte: spots* length                                                      2 bytes: spot*
+1 byte: spots* length                                               2 bytes: spot* (a list of them)
 | - - - - - - - - |                                             | - - - - - - - - | - - - - - - - - |
 (how many bytes is there that contains this ships's spots)         (spot*: [x; y] -> x * 1000 + y)
 (eg.: in case of 1 spot - 2 [spots* length = spot* count * 2])     (eg.: in case of [8; 7] -> 8007)
@@ -46,8 +46,8 @@
     - 1: the opponent starts
 
 ### Spot feedback*:
-  1 byte: feedback
-| - - | - | - - - - - |
+  1 byte: feedback              2 bytes: spot* (optional, list)
+| - - | - | - - - - - |     | - - - - - - - - | - - - - - - - - |
  (0-3) (0-1)
 
     - 0: not your turn
@@ -56,7 +56,7 @@
     - 3: hit (you successfully hit on of the opponent's ship)
 
     - 0: the opponent's ship did not sink
-    - 1: the opponent's ship did sink
+    - 1: the opponent's ship did sink -> in this case, the ship's positions are going to be sent down in the optional byte list for displaying reasons
 
 ### Stats*:
 1 byte: game/ship info          1 byte: hit info

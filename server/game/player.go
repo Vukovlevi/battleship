@@ -40,7 +40,7 @@ func (p *Player) CanGuessSpot(spot int) bool {
     return !ok
 }
 
-func (p *Player) IsHit(spot int) (bool, byte) { //returns if the spot is a hit and wether the hit sink the ship
+func (p *Player) IsHit(spot int) (bool, byte, *Ship) { //returns if the spot is a hit and wether the hit sink the ship
     for i, _ := range p.ships {
         if _, ok := p.ships[i].positions[spot]; ok {
             p.ships[i].health--
@@ -58,10 +58,10 @@ func (p *Player) IsHit(spot int) (bool, byte) { //returns if the spot is a hit a
             if p.ships[i].health == 0 {
                 sink = 1
             }
-            return true, sink
+            return true, sink, &p.ships[i]
         }
     }
-    return false, 0
+    return false, 0, nil
 }
 
 func (p *Player) RemainingHealth() (byte, byte) { //returns the remaining ships and the remaining health of the player

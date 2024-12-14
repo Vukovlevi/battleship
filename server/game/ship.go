@@ -122,3 +122,13 @@ func parseShips(data []byte, log *logger.Logger) ([]Ship, error) { //the data is
     }
     return ships, nil
 }
+
+func (s *Ship) GetPositionsInBytes() []byte {
+    positions := make([]byte, s.health * 2)
+    i := 0
+    for pos := range s.positions {
+        binary.BigEndian.PutUint16(positions[i * 2:], uint16(pos))
+        i++
+    }
+    return positions
+}
