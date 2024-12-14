@@ -195,6 +195,11 @@ func testPositionResponse(pos int, resp []byte, won bool, log logger.Logger) boo
             assert.Assert((firstByte >> 6) & 1 == 1, "this player should have lost", "got first byte", firstByte)
             assert.Assert((firstByte >> 3) & 7 == 1, "there should be 1 remaining ship if this player has lost", "got first byte", firstByte)
             assert.Assert(remainingHealth == 1, "there should be 1 remaining health if this player has lost", "got remaining health", remainingHealth)
+
+            remainingSpots := resp[tcp.HEADER_OFFSET + 2:]
+            assert.Assert(len(remainingSpots) == 2, "there should be 2 bytes for the last remaining spot", "got bytes", len(remainingSpots))
+            pos := binary.BigEndian.Uint16(remainingSpots)
+            assert.Assert(pos == 5008, "the last remaining positions should be 5008", "got last remaining positions", pos)
         }
 
         return true
