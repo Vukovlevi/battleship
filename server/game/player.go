@@ -1,6 +1,8 @@
 package game
 
 import (
+	"encoding/binary"
+
 	"github.com/vukovlevi/battleship/server/assert"
 	"github.com/vukovlevi/battleship/server/logger"
 	"github.com/vukovlevi/battleship/server/tcp"
@@ -129,4 +131,16 @@ func (p *Player) SetShips(data []byte, log *logger.Logger) error { //the data is
     p.ships = ships
     log.Debug("players ships", "player", p.username, "ships", p.ships)
     return nil
+}
+
+func (p *Player) GetRemainingSpots(enemyCannotGuessSpots map[int]bool) []byte { //returns the remaining spots in case of a win for the loser to display
+    positions := make([]byte, 0)
+    for _, ship := range p.ships {
+        for pos, _ := range ship.positions {
+            if _, ok := enemyCannotGuessSpots[pos]; !ok {
+                positions = binary.BigEndian.AppendUint16(positions, uint16(pos))
+            }
+        }
+    }
+    return positions
 }

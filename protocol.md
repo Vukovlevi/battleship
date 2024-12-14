@@ -59,8 +59,8 @@
     - 1: the opponent's ship did sink -> in this case, the ship's positions are going to be sent down in the optional byte list for displaying reasons
 
 ### Stats*:
-1 byte: game/ship info          1 byte: hit info
-| - | - | - - - | - - - |      | - - - - - - - - |
+1 byte: game/ship info          1 byte: hit info           2 bytes: spot* (optional, list)
+| - | - | - - - | - - - |      | - - - - - - - - |      | - - - - - - - - | - - - - - - - - |
 (0-1)(0-1)(0-7)
 
     - 0: the game is over because a player has won
@@ -72,6 +72,8 @@
     - (0-3): the remaining enemy ships
 
     - hit info: how many hit was remaining until all of your opponent's ships sink
+
+    - optional spots: only the loser gets them, they contain the remaining spots of the enemy ships
 
 ### Mismatch type*:
     1 byte: type

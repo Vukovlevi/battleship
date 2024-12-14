@@ -257,6 +257,7 @@ func (r *GameRoom) HandleGameOver(winner *Player, loser *Player) {
     data = r.GetStatsByte(nil, loser, winner) //get stats for the loser (nil indicating that the game is over because of a win)
     cmd.Connection = loser.connection
     cmd.Data = data
+    cmd.Data = append(cmd.Data, winner.GetRemainingSpots(loser.cannotGuessHereSpots)...) //gets the spots from the winner that the loser hasnt guessed
     loser.connection.Send(cmd.EncodeToBytes())
 
     winner.connection.GameOver = true

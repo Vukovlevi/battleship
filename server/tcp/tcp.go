@@ -11,7 +11,7 @@ import (
 )
 
 const (
-    VERSION byte = 1
+    VERSION byte = 2
     VERSION_SIZE = 1
     VERSION_OFFSET = 0
     MESSAGE_TYPE_SIZE = 1
