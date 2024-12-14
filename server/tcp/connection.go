@@ -5,13 +5,13 @@ import (
 )
 
 type Connection struct {
-    Id int
+    Id string
     conn net.Conn
     SendToChan chan TcpCommand
     GameOver bool
 }
 
-func CreateConnection(id int, conn net.Conn, sendToChan chan TcpCommand) Connection {
+func CreateConnection(id string, conn net.Conn, sendToChan chan TcpCommand) Connection {
     return Connection{
         Id: id,
         conn: conn,

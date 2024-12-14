@@ -27,7 +27,7 @@ func TestConnectingToGameServer(t *testing.T) {
 	testGameServer.Start()
 
 	r, w := net.Pipe()
-	connection := tcp.CreateConnection(0, w, testGameServer.IncomingRequestChan)
+	connection := tcp.CreateConnection("0", w, testGameServer.IncomingRequestChan)
 	connection.SendToChan = testGameServer.IncomingRequestChan
 	command := tcp.TcpCommand{
 		Connection: &connection,
@@ -47,7 +47,7 @@ func TestConnectingToGameServer(t *testing.T) {
 
 	//testing first player connection
 	r, w = net.Pipe()
-	connection = tcp.CreateConnection(0, w, testGameServer.IncomingRequestChan)
+	connection = tcp.CreateConnection("0", w, testGameServer.IncomingRequestChan)
 	command.Connection = &connection
 	command.Type = tcp.CommandType.JoinRequest
 
@@ -76,7 +76,7 @@ func TestConnectingToGameServer(t *testing.T) {
 
 	//testing second connection
 	_, w = net.Pipe()
-	connection = tcp.CreateConnection(1, w, testGameServer.IncomingRequestChan)
+	connection = tcp.CreateConnection("1", w, testGameServer.IncomingRequestChan)
 	command.Connection = &connection
 
 	command.Data = []byte("joska")

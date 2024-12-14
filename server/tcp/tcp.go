@@ -6,6 +6,7 @@ import (
 	"net"
 	"sync"
 
+	"github.com/google/uuid"
 	"github.com/vukovlevi/battleship/server/assert"
 	"github.com/vukovlevi/battleship/server/logger"
 )
@@ -23,7 +24,7 @@ const (
 
 type Server struct {
     listener net.Listener
-    Connections map[int]*Connection
+    Connections map[string]*Connection
     mutex sync.RWMutex
     log *logger.Logger
     port uint16
@@ -35,7 +36,7 @@ func NewTcpServer(port uint16, log *logger.Logger) *Server {
 
     return &Server{
         listener: listener,
-        Connections: make(map[int]*Connection),
+        Connections: make(map[string]*Connection),
         mutex: sync.RWMutex{},
         log: log,
         port: port,
@@ -97,7 +98,6 @@ func readConnection(server *Server, connection Connection) {
 
 func (s *Server) Start(sendToChan chan TcpCommand) {
     s.log.Info("starting tcp server", "port", s.port)
-    id := 0
     for {
         conn, err := s.listener.Accept()
 
@@ -105,6 +105,7 @@ func (s *Server) Start(sendToChan chan TcpCommand) {
             s.log.Warning("error while acceptin new connection", "err", err)
         }
 
+        id := uuid.New().String()
         connection := CreateConnection(id, conn, sendToChan)
         s.mutex.Lock()
         s.Connections[id] = &connection
@@ -112,7 +113,6 @@ func (s *Server) Start(sendToChan chan TcpCommand) {
 
         s.log.Info("accepting new connection", "id", id, "addr", conn.RemoteAddr())
         s.log.Debug("connections info", "len", len(s.Connections))
-        id++
 
         go readConnection(s, connection)
     }
