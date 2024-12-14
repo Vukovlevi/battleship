@@ -36,14 +36,14 @@ func TestCommandEncoding(t *testing.T) {
 
 	name := []byte("vukovlevi")
 	shouldbe1 := make([]byte, tcp.HEADER_OFFSET)
-	shouldbe1[tcp.VERSION_OFFSET] = 1
-	shouldbe1[tcp.MESSAGE_TYPE_OFFSET] = 1
+	shouldbe1[tcp.VERSION_OFFSET] = tcp.VERSION
+	shouldbe1[tcp.MESSAGE_TYPE_OFFSET] = tcp.CommandType.JoinRequest
 	binary.BigEndian.PutUint16(shouldbe1[tcp.DATA_LENGTH_OFFSET:], uint16(len(name)))
 	shouldbe1 = append(shouldbe1, name...)
 
 	shouldbe2 := make([]byte, tcp.HEADER_OFFSET)
-	shouldbe2[tcp.VERSION_OFFSET] = 1
-	shouldbe2[tcp.MESSAGE_TYPE_OFFSET] = 2
+	shouldbe2[tcp.VERSION_OFFSET] = tcp.VERSION
+	shouldbe2[tcp.MESSAGE_TYPE_OFFSET] = tcp.CommandType.DuplicateUsername
 	binary.BigEndian.PutUint16(shouldbe2[tcp.DATA_LENGTH_OFFSET:], uint16(0))
 
 	t.Logf("bytes1: %v\nshould be: %v", bytes1, shouldbe1)
