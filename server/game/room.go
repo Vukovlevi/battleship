@@ -213,7 +213,7 @@ func (r *GameRoom) HandlePlayerGuess(command tcp.TcpCommand) {
     remainingShips, _ := otherPlayer.RemainingHealth() //check for a winner, if there is one, handle gameover event instead of guess confirm and player guess to the other player
     r.log.Debug("handling player guess", "player", player.username, "spot", spot, "isHit", hit, "didSink", sink, "enemy remaining ships", remainingShips)
     if remainingShips == 0 {
-        r.HandleGameOver(player, otherPlayer)
+        r.HandleGameOver(player, otherPlayer, sunkenShip)
         return
     }
 
@@ -245,13 +245,14 @@ func (r *GameRoom) HandlePlayerGuess(command tcp.TcpCommand) {
     r.state = otherPlayer.username //set the state for the other user's turn
 }
 
-func (r *GameRoom) HandleGameOver(winner *Player, loser *Player) {
+func (r *GameRoom) HandleGameOver(winner, loser *Player, lastSunkenShip *Ship) {
     data := r.GetStatsByte(nil, winner, loser) //get stats for the winner (nil indicating that the game is over because of a win)
     cmd := tcp.TcpCommand{
         Connection: winner.connection,
         Type: tcp.CommandType.GameOver,
         Data: data,
     }
+    cmd.Data = append(cmd.Data, lastSunkenShip.GetPositionsInBytes()...)
     winner.connection.Send(cmd.EncodeToBytes())
 
     data = r.GetStatsByte(nil, loser, winner) //get stats for the loser (nil indicating that the game is over because of a win)
