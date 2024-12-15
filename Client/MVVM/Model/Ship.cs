@@ -90,6 +90,11 @@ namespace Client.MVVM.Model
 
         public void DeleteShip(Grid grid)
         {
+            if (GameState.CurrentShip != null)
+            {
+                GameState.CurrentShip.PlaceButton.Background = new SolidColorBrush(Colors.Gray);
+            }
+
             grid.Children.Remove(Cell);
             IsPlaced = false;
 

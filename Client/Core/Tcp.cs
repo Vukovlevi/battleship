@@ -13,7 +13,7 @@ namespace Client.Core
 {
     internal class Tcp
     {
-        public static readonly byte VERSION = 1;
+        public static readonly byte VERSION = 2;
         public static readonly int VERSION_OFFSET = 0;
         public static readonly int VERSION_SIZE = 1;
 

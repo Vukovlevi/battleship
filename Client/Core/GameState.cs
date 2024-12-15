@@ -185,6 +185,20 @@ namespace Client.Core
                 if (GameState.Ships[shipIndex].Health == 0)
                 {
                     GlobalData.Instance.GameBoardVM.YourRemainingShips--;
+
+                    var positions = GameState.Ships[shipIndex].GetPositions();
+                    foreach (var pos in positions)
+                    {
+                        int sinkX = pos / 1000;
+                        int sinkY = pos % 1000;
+                        Button sinkButton = new Button();
+                        Grid.SetRow(sinkButton, sinkY);
+                        Grid.SetColumn(sinkButton, sinkX);
+                        Panel.SetZIndex(sinkButton, 2);
+                        sinkButton.Style = (Style)sinkButton.FindResource("ConfirmedSpot");
+                        sinkButton.Background = new SolidColorBrush(Color.FromRgb(90, 30, 30));
+                        GlobalData.Instance.YourGrid.Children.Add(sinkButton);
+                    }
                 }
             }
             else
@@ -200,7 +214,7 @@ namespace Client.Core
             Application.Current.Dispatcher.Invoke(() =>
             {
                 Asserter.Assert(GameState.state == State.EnemyTurn, "state should be enemyturn when receiving guess confirm", "got state", GameState.state.ToString());
-                Asserter.Assert(command.data.Length == 1, "data length should be 1 when receiving guess confirm", "got len", command.data.Length.ToString());
+                Asserter.Assert(command.data.Length % 2 == 1, "data length should be 1 when receiving guess confirm", "got len", command.data.Length.ToString());
 
                 Button button = new Button();
                 Grid.SetRow(button, Grid.GetRow(GameState.GuessedPlace));
@@ -226,6 +240,21 @@ namespace Client.Core
                         {
                             GlobalData.Instance.GameBoardVM.EnemyRemainingShips--;
                             GlobalData.Instance.GameBoardVM.Status = "Talált, süllyedt\n" + GlobalData.Instance.GameBoardVM.Status;
+
+                            for (int i = 1; i < command.data.Length; i++)
+                            {
+                                int spot = Tcp.GetUint16(command.data.Skip(i).ToArray());
+                                int x = spot / 1000;
+                                int y = spot % 1000;
+                                Button sinkButton = new Button();
+                                Grid.SetRow(sinkButton, y);
+                                Grid.SetColumn(sinkButton, x);
+                                Panel.SetZIndex(sinkButton, 2);
+                                sinkButton.Style = (Style)sinkButton.FindResource("ConfirmedSpot");
+                                sinkButton.Background = new SolidColorBrush(Color.FromRgb(90, 30, 30));
+                                GlobalData.Instance.EnemyGrid.Children.Add(sinkButton);
+                                i++;
+                            }
                         }
                         else
                         {
@@ -241,7 +270,7 @@ namespace Client.Core
 
         static void HandleGameOver(TcpCommand command)
         {
-            Asserter.Assert(command.data.Length == 2, "the length of the data should always be 2 when receiving game over command", "got len", command.data.Length.ToString());
+            Asserter.Assert(command.data.Length % 2 == 0, "the length of the data should always be 2 when receiving game over command", "got len", command.data.Length.ToString());
 
             Application.Current.Dispatcher.Invoke(() =>
             {
@@ -271,6 +300,21 @@ namespace Client.Core
 
                         GlobalData.Instance.EnemyGrid.Children.Remove(GameState.GuessedPlace);
                         GameState.GuessedPlace = null;
+
+                        for (int i = 2; i < command.data.Length; i++)
+                        {
+                            int spot = Tcp.GetUint16(command.data.Skip(i).ToArray());
+                            int sinkX = spot / 1000;
+                            int sinkY = spot % 1000;
+                            Button sinkButton = new Button();
+                            Grid.SetRow(sinkButton, sinkY);
+                            Grid.SetColumn(sinkButton, sinkX);
+                            Panel.SetZIndex(sinkButton, 2);
+                            sinkButton.Style = (Style)sinkButton.FindResource("ConfirmedSpot");
+                            sinkButton.Background = new SolidColorBrush(Color.FromRgb(90, 30, 30));
+                            GlobalData.Instance.EnemyGrid.Children.Add(sinkButton);
+                            i++;
+                        }
                     }
                     else
                     {
@@ -282,6 +326,21 @@ namespace Client.Core
                         int y = GlobalData.Instance.YourNotGuessedShipSpots[0] % 1000;
                         var button = CreateConfirmedSpot(x, y);
                         GlobalData.Instance.YourGrid.Children.Add(button);
+
+                        for (int i = 2; i < command.data.Length; i++)
+                        {
+                            int spot = Tcp.GetUint16(command.data.Skip(i).ToArray());
+                            int sinkX = spot / 1000;
+                            int sinkY = spot % 1000;
+                            Button sinkButton = new Button();
+                            Grid.SetRow(sinkButton, sinkY);
+                            Grid.SetColumn(sinkButton, sinkX);
+                            Panel.SetZIndex(sinkButton, 2);
+                            sinkButton.Style = (Style)sinkButton.FindResource("ConfirmedSpot");
+                            sinkButton.Background = new SolidColorBrush(Colors.Orange);
+                            GlobalData.Instance.EnemyGrid.Children.Add(sinkButton);
+                            i++;
+                        }
                     }
                     MessageBox.Show(message);
                     GlobalData.Instance.GameBoardVM.Status = "A játéknak vége!";
