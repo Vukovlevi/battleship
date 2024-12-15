@@ -35,22 +35,35 @@ type Logger struct {
 func createDebugFile() io.Writer {
 	outFile, err := os.Create("debug.txt")
 	if err != nil {
-		panic("debug file could not be deleted")
+		panic("debug file could not be created")
 	}
 	outFile.Write([]byte("--- NEW TEST ---\n"))
 
 	return outFile
 }
 
+func createLogFile() io.Writer {
+    logFile, err := os.Create("out.log")
+    if err != nil {
+        panic("log file could not be created")
+    }
+	logFile.Write([]byte("--- NEW TEST ---\n"))
+
+    return logFile
+}
+
 func CreateLogger(w, e io.Writer, debugMode bool) Logger {
+    var logWriter io.Writer
     var debugWriter io.Writer
     if debugMode {
+        logWriter = w
         debugWriter = w
     } else {
+        logWriter = createLogFile()
         debugWriter = createDebugFile()
     }
     return Logger{
-        writer: w,
+        writer: logWriter,
         errorWriter: e,
         debugWriter: debugWriter,
         color: colorEnum{

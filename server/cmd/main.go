@@ -17,14 +17,6 @@ func main() {
 
     log := logger.CreateLogger(os.Stdout, os.Stdout, debugMode)
     assert.SetLogger(&log)
-    /*
-    log.Info("lajos", "num", 5, "id", 76)
-    log.Debug("lajos", "num", 5, "id", 76)
-    log.Warning("zigi", "num", 5, "id", 77)
-    log.Error("budi", "num", 5, "id", 78)
-
-    assert.Assert(true, "lajos", "id", 5, "name", "szia")
-    */
 
     gameServer := game.NewGameServer(&log)
     gameServer.Start()
