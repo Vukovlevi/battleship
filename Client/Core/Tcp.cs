@@ -137,21 +137,30 @@ namespace Client.Core
 
         void HandleTcpCommand(byte[] data)
         {
-            byte version = data.Skip(VERSION_OFFSET).Take(VERSION_SIZE).ToArray()[0];
-            Asserter.Assert(version == VERSION, "the version of the client does not match the version of the server", "client version", GetByteAsString(VERSION), "server version", GetByteAsString(version));
+            //string display = "";
+            //foreach (var elem in data)
+            //{
+            //    display += GetByteAsString(elem) + " ";
+            //}
+            //Asserter.Assert(HEADER_OFFSET + len == data.Length, "the length of the message doesnt equals to the said length", "said length", (len + 4).ToString(), "real length", data.Length.ToString(), "data", display);
 
-            int len = GetUint16(data.Skip(DATA_LENGTH_OFFSET).Take(DATA_LENGTH_SIZE).ToArray());
-            string display = "";
-            foreach (var elem in data)
+            int remainingBytes = data.Length;
+            while (remainingBytes > 0)
             {
-                display += GetByteAsString(elem) + " ";
+                byte version = data.Skip(VERSION_OFFSET).Take(VERSION_SIZE).ToArray()[0];
+                Asserter.Assert(version == VERSION, "the version of the client does not match the version of the server", "client version", GetByteAsString(VERSION), "server version", GetByteAsString(version));
+
+                int len = GetUint16(data.Skip(DATA_LENGTH_OFFSET).Take(DATA_LENGTH_SIZE).ToArray());
+
+                var curr = data.Take(HEADER_OFFSET + len);
+                byte type = curr.Skip(MESSAGE_TYPE_OFFSET).Take(MESSAGE_TYPE_SIZE).ToArray()[0];
+                TcpCommand command = new TcpCommand(type, curr.Skip(HEADER_OFFSET).ToArray());
+
+                GameState.HandleCommand(command);
+
+                data = curr.Skip(curr.Count()).ToArray();
+                remainingBytes -= curr.Count();
             }
-            Asserter.Assert(HEADER_OFFSET + len == data.Length, "the length of the message doesnt equals to the said length", "said length", (len + 4).ToString(), "real length", data.Length.ToString(), "data", display);
-
-            byte type = data.Skip(MESSAGE_TYPE_OFFSET).Take(MESSAGE_TYPE_SIZE).ToArray()[0];
-            TcpCommand command = new TcpCommand(type, data.Skip(HEADER_OFFSET).ToArray());
-
-            GameState.HandleCommand(command);
         }
     }
 }
