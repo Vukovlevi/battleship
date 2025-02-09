@@ -2,6 +2,7 @@ package game
 
 import (
 	"encoding/binary"
+	"time"
 
 	"github.com/vukovlevi/battleship/server/assert"
 	"github.com/vukovlevi/battleship/server/logger"
@@ -50,11 +51,14 @@ func (r *GameRoom) IsFull() bool {
 
 func (r *GameRoom) CloseRoom(command *tcp.TcpCommand) {
 	r.log.Info("closing room", "player1", r.player1.username, "player2", r.player2.username)
+    r.player1.connection.GameOver = true
+    r.player2.connection.GameOver = true
 	if command != nil { //send the players the initiating close command -> should be game over
 		r.player1.connection.Send(command.EncodeToBytes())
 		r.player2.connection.Send(command.EncodeToBytes())
 	}
 
+    time.Sleep(time.Millisecond * 100)
 	close(r.MessageChan)
 	r.closeChan <- r //inform the game server about this room being closed
 }

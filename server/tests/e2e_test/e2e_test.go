@@ -494,6 +494,7 @@ func TestEndToEnd(t *testing.T) {
 	time.Sleep(time.Millisecond * 10)
 
 	assert.Assert(len(testTcpServer.Connections) == 1, "there should be only 1 connection left", "con len", len(testTcpServer.Connections))
+    time.Sleep(time.Millisecond * 150)
 	assert.Assert(len(testGameServer.Rooms) == 0, "all rooms should be deleted", "rooms", len(testGameServer.Rooms))
 	assert.Assert(len(testGameServer.MatchMaking.Players) == 0, "there should not be any player in mm", "mm len", len(testGameServer.MatchMaking.Players))
 
